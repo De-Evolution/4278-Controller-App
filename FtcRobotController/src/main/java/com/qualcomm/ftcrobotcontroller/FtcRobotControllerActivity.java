@@ -61,6 +61,9 @@ import com.qualcomm.ftccommon.FtcWifiChannelSelectorActivity;
 import com.qualcomm.ftccommon.LaunchActivityConstantsList;
 import com.qualcomm.ftccommon.Restarter;
 import com.qualcomm.ftccommon.UpdateUI;
+import com.qualcomm.ftccommon.configuration.AutoConfigureActivity;
+import com.qualcomm.ftccommon.configuration.FtcConfigurationActivity;
+import com.qualcomm.ftccommon.configuration.FtcLoadFileActivity;
 import com.qualcomm.ftcrobotcontroller.opmodes.FtcOpModeRegister;
 import com.qualcomm.modernrobotics.ModernRoboticsHardwareFactory;
 import com.qualcomm.robotcore.hardware.HardwareFactory;
@@ -256,11 +259,8 @@ public class FtcRobotControllerActivity extends Activity {
         Toast.makeText(context, "Restarting Robot", Toast.LENGTH_SHORT).show();
         requestRobotRestart();
         return true;
-      case R.id.action_settings:
-        // The string to launch this activity must match what's in AndroidManifest of FtcCommon for this activity.
-        Intent settingsIntent = new Intent("com.qualcomm.ftccommon.FtcRobotControllerSettingsActivity.intent.action.Launch");
-        startActivityForResult(settingsIntent, LaunchActivityConstantsList.FTC_ROBOT_CONTROLLER_ACTIVITY_CONFIGURE_ROBOT);
-        return true;
+      case R.id.action_choose_config_file:
+        startActivityForResult(new Intent(this, FtcLoadFileActivity.class), LaunchActivityConstantsList.FTC_ROBOT_CONTROLLER_ACTIVITY_CONFIGURE_ROBOT);
       case R.id.action_about:
         // The string to launch this activity must match what's in AndroidManifest of FtcCommon for this activity.
         Intent intent = new Intent("com.qualcomm.ftccommon.configuration.AboutActivity.intent.action.Launch");
@@ -275,6 +275,8 @@ public class FtcRobotControllerActivity extends Activity {
         viewLogsIntent.putExtra(LaunchActivityConstantsList.VIEW_LOGS_ACTIVITY_FILENAME, RobotLog.getLogFilename(this));
         startActivity(viewLogsIntent);
         return true;
+      case R.id.action_change_wifi_channel:
+		  startActivity(new Intent(this, FtcWifiChannelSelectorActivity.class));
       default:
         return super.onOptionsItemSelected(item);
     }

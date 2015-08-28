@@ -34,6 +34,8 @@
   <string name="warning_sign_emoji">⚠️</string>
   <string name="error_emoji">🚫</string>
   <string name="info_emoji">🚩</string>
+    <string name="change_channel_menu_item">Change Channel</string>
+    <string name="choose_config_menu_item">Hardware Config…</string>
 
 
 </resources>
