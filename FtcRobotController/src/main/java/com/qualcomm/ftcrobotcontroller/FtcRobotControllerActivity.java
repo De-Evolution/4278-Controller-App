@@ -106,6 +106,8 @@ public class FtcRobotControllerActivity extends Activity {
 
   protected FtcRobotControllerService controllerService;
 
+	protected boolean useLANconnection;
+
   public static FtcEventLoop eventLoop;
 
   protected class RobotRestarter implements Restarter {
@@ -119,7 +121,6 @@ public class FtcRobotControllerActivity extends Activity {
   protected ServiceConnection connection = new ServiceConnection() {
     @Override
     public void onServiceConnected(ComponentName name, IBinder service) {
-      FtcRobotControllerBinder binder = (FtcRobotControllerBinder) service;
       onServiceBind(binder.getService());
     }
 
@@ -204,9 +205,6 @@ public class FtcRobotControllerActivity extends Activity {
         return false;
       }
     });
-
-    //startActivity(new Intent(this, FtcWifiChannelSelectorActivity.class));
-
   }
 
   @Override
