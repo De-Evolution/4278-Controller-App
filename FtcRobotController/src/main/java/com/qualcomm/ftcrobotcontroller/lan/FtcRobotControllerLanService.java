@@ -1,18 +1,26 @@
 package com.qualcomm.ftcrobotcontroller.lan;
 
+import android.content.Intent;
+import android.os.Build;
+import android.os.IBinder;
+
 import com.qualcomm.ftccommon.DbgLog;
 import com.qualcomm.ftccommon.FtcRobotControllerService;
+import com.qualcomm.ftcrobotcontroller.utils.RoboLog;
 import com.qualcomm.robotcore.eventloop.EventLoop;
 import com.qualcomm.robotcore.eventloop.EventLoopManager;
 import com.qualcomm.robotcore.exception.RobotCoreException;
+import com.qualcomm.robotcore.factory.RobotFactory;
 import com.qualcomm.robotcore.robot.Robot;
 import com.qualcomm.robotcore.util.RobotLog;
+import com.qualcomm.robotcore.wifi.WifiDirectAssistant;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.net.InetSocketAddress;
 import java.net.SocketException;
+import java.util.Arrays;
 
 /**
  * Service which connects to the DS via LAN instead of Wifi Direct
@@ -26,31 +34,55 @@ public class FtcRobotControllerLanService extends FtcRobotControllerService
 	EventLoop loop;
 	StatusUpdater statusUpdater;
 	
-	Method setStatus;
-	
+	Method setStatusMethod;
+	Field binderField;
+
 	public FtcRobotControllerLanService()
 	{
 		super();
 
 		statusUpdater = new StatusUpdater();
-		
+
+		Method[] superclassMethods = getClass().getSuperclass().getDeclaredMethods();
+		setStatusMethod = superclassMethods[superclassMethods.length - 6];  //6th method from the end
+		setStatusMethod.setAccessible(true);
+
+		binderField = getClass().getSuperclass().getDeclaredFields()[0];
+		binderField.setAccessible(true);
+	}
+
+	@Override
+	public IBinder onBind(Intent intent) {
+		DbgLog.msg("Starting FTC Controller Service");
+		DbgLog.msg("Android device is " + Build.MANUFACTURER + ", " + Build.MODEL);
+
+		//do not start WifiDirectAssistant
+
 		try
 		{
-			setStatus = super.getClass().getDeclaredMethod("a", String.class);
-			setStatus.setAccessible(true);
+			return (IBinder) binderField.get(this);
 		}
-		catch (NoSuchMethodException e)
+		catch (IllegalAccessException e)
 		{
 			e.printStackTrace();
+			return null;
 		}
 	}
-	
+
+	@Override
+	public boolean onUnbind(Intent intent) {
+		DbgLog.msg("Stopping FTC Controller Service");
+		//do not shut down Wifi Direct Assistant
+		this.shutdownRobot();
+		return false;
+	}
+
 	//proxy to super.a
 	public void setStatus(String newStatus)
 	{
 		try
 		{
-			setStatus.invoke(this, newStatus);
+			setStatusMethod.invoke(this, newStatus);
 		}
 		catch (IllegalAccessException e)
 		{
@@ -78,7 +110,7 @@ public class FtcRobotControllerLanService extends FtcRobotControllerService
 		RobotLog.clearGlobalErrorMsg();
 		DbgLog.msg("Processing robot setup");
 		this.loop = eventLoop;
-		this.initThread = new Thread(new lanInitializer());
+		this.initThread = new Thread(new LanInitializer());
 		this.initThread.start();
 
 		while(this.initThread.getState() == Thread.State.NEW) {
@@ -94,19 +126,20 @@ public class FtcRobotControllerLanService extends FtcRobotControllerService
 		}
 	}
 
-	private class lanInitializer implements Runnable {
-		private lanInitializer() {
+	private class LanInitializer implements Runnable {
+		private LanInitializer() {
 		}
 
 		public void run() {
 
 			//get things that we need to access from superclass
+			Field robotField;
 			Robot robot = null;
 			try
 			{
-				Field robotField = super.getClass().getDeclaredFields()[2];
+				robotField = FtcRobotControllerLanService.this.getClass().getSuperclass().getDeclaredFields()[2];
 				robotField.setAccessible(true);
-				robot = (Robot) robotField.get(this);
+				robot = (Robot) robotField.get(FtcRobotControllerLanService.this);
 			}
 			catch (IllegalAccessException e)
 			{
@@ -119,6 +152,15 @@ public class FtcRobotControllerLanService extends FtcRobotControllerService
 			{
 				robot.shutdown();
 				robot = null;
+			}
+
+			try
+			{
+				robot = RobotFactory.createRobot();
+			}
+			catch (RobotCoreException e)
+			{
+				e.printStackTrace();
 			}
 			
 			setStatus("Robot Status: scanning for USB devices");
@@ -150,11 +192,17 @@ public class FtcRobotControllerLanService extends FtcRobotControllerService
 					RobotLog.logStacktrace(var4);
 					throw new RobotCoreException("Robot start failed: " + var4.toString());
 				}
+
+				robotField.set(FtcRobotControllerLanService.this, robot);
 			}
 			catch (RobotCoreException var2)
 			{
 				setStatus("Robot Status: failed to start robot");
 				RobotLog.setGlobalErrorMsg(var2.getMessage());
+			}
+			catch (IllegalAccessException e)
+			{
+				e.printStackTrace();
 			}
 			
 		}

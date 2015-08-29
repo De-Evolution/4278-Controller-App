@@ -41,6 +41,7 @@ import android.content.ServiceConnection;
 import android.content.SharedPreferences;
 import android.content.res.Configuration;
 import android.hardware.usb.UsbManager;
+import android.net.ConnectivityManager;
 import android.net.wifi.WifiManager;
 import android.os.Bundle;
 import android.os.IBinder;
@@ -191,7 +192,7 @@ public class FtcRobotControllerActivity extends Activity {
 	  wdServiceIntent = new Intent(this, FtcRobotControllerService.class);
 	  lanServiceIntent = new Intent(this, FtcRobotControllerLanService.class);
 	  networkUpdateFilter = new IntentFilter();
-	  networkUpdateFilter.addAction(WifiManager.NETWORK_STATE_CHANGED_ACTION);
+	  networkUpdateFilter.addAction(ConnectivityManager.CONNECTIVITY_ACTION);
 
 	  ipUpdaterReceiver = new WifiIPUpdaterReceiver(this, textWifiDirectStatus);
 
@@ -245,7 +246,10 @@ public class FtcRobotControllerActivity extends Activity {
 
     utility.updateHeader(Utility.NO_FILE, R.string.pref_hardware_config_filename, R.id.active_filename, R.id.included_header);
 
-    callback.wifiDirectUpdate(WifiDirectAssistant.Event.DISCONNECTED);
+	  if(!useLANconnection)
+	  {
+		  callback.wifiDirectUpdate(WifiDirectAssistant.Event.DISCONNECTED);
+	  }
 
     entireScreenLayout.setOnTouchListener(new View.OnTouchListener()
     {
@@ -275,6 +279,8 @@ public class FtcRobotControllerActivity extends Activity {
     if (controllerService != null) unbindService(connection);
 
     RobotLog.cancelWriteLogcatToDisk(this);
+
+    preferences.edit().putBoolean("use_lan_connection", useLANconnection).apply();
   }
 
   @Override

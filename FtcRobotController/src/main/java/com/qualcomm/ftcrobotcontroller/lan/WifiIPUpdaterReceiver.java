@@ -38,7 +38,7 @@ public class WifiIPUpdaterReceiver extends BroadcastReceiver
 
 
 		NetworkInfo netInfo = conMan.getActiveNetworkInfo();
-		if (netInfo != null && netInfo.getType() == ConnectivityManager.TYPE_WIFI)
+		if (netInfo != null && netInfo.getType() == ConnectivityManager.TYPE_WIFI && netInfo.isConnected())
 		{
 
 			int ipAddress = wifiMan.getConnectionInfo().getIpAddress();
