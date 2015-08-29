@@ -2,15 +2,22 @@
 
   <item
     android:id="@+id/action_choose_config_file"
-    android:orderInCategory="98"
+    android:orderInCategory="97"
     android:showAsAction="never"
     android:title="@string/choose_config_menu_item"/>
 
     <item
-        android:id="@+id/action_change_wifi_channel"
+    android:id="@+id/action_change_wifi_channel"
+    android:orderInCategory="98"
+    android:showAsAction="never"
+    android:title="@string/change_channel_menu_item"/>
+
+    <item
+        android:id="@+id/action_toggle_lan"
         android:orderInCategory="99"
         android:showAsAction="never"
-        android:title="@string/change_channel_menu_item"/>
+        android:title="@string/lan_enable_menu_item"/>
+
 
   <item
     android:id="@+id/action_restart_robot"

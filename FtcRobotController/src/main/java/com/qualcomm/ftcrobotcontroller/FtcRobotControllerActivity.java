@@ -36,10 +36,12 @@ import android.app.Activity;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.ServiceConnection;
 import android.content.SharedPreferences;
 import android.content.res.Configuration;
 import android.hardware.usb.UsbManager;
+import android.net.wifi.WifiManager;
 import android.os.Bundle;
 import android.os.IBinder;
 import android.preference.PreferenceManager;
@@ -61,9 +63,9 @@ import com.qualcomm.ftccommon.FtcWifiChannelSelectorActivity;
 import com.qualcomm.ftccommon.LaunchActivityConstantsList;
 import com.qualcomm.ftccommon.Restarter;
 import com.qualcomm.ftccommon.UpdateUI;
-import com.qualcomm.ftccommon.configuration.AutoConfigureActivity;
-import com.qualcomm.ftccommon.configuration.FtcConfigurationActivity;
 import com.qualcomm.ftccommon.configuration.FtcLoadFileActivity;
+import com.qualcomm.ftcrobotcontroller.lan.FtcRobotControllerLanService;
+import com.qualcomm.ftcrobotcontroller.lan.WifiIPUpdaterReceiver;
 import com.qualcomm.ftcrobotcontroller.opmodes.FtcOpModeRegister;
 import com.qualcomm.modernrobotics.ModernRoboticsHardwareFactory;
 import com.qualcomm.robotcore.hardware.HardwareFactory;
@@ -104,6 +106,12 @@ public class FtcRobotControllerActivity extends Activity {
   protected Dimmer dimmer;
   protected LinearLayout entireScreenLayout;
 
+	Intent wdServiceIntent;
+	Intent lanServiceIntent;
+
+	IntentFilter networkUpdateFilter;
+	protected WifiIPUpdaterReceiver ipUpdaterReceiver;
+
   protected FtcRobotControllerService controllerService;
 
 	protected boolean useLANconnection;
@@ -121,6 +129,7 @@ public class FtcRobotControllerActivity extends Activity {
   protected ServiceConnection connection = new ServiceConnection() {
     @Override
     public void onServiceConnected(ComponentName name, IBinder service) {
+      FtcRobotControllerBinder binder = (FtcRobotControllerBinder) service;
       onServiceBind(binder.getService());
     }
 
@@ -171,7 +180,7 @@ public class FtcRobotControllerActivity extends Activity {
     updateUI = new UpdateUI(this, dimmer);
     updateUI.setRestarter(restarter);
     updateUI.setTextViews(textWifiDirectStatus, textRobotStatus,
-        textGamepad, textOpMode, textErrorMessage, textDeviceName);
+		    textGamepad, textOpMode, textErrorMessage, textDeviceName);
     callback = updateUI.new Callback();
 
     PreferenceManager.setDefaultValues(this, R.xml.preferences, false);
@@ -179,8 +188,44 @@ public class FtcRobotControllerActivity extends Activity {
 
     hittingMenuButtonBrightensScreen();
 
+	  wdServiceIntent = new Intent(this, FtcRobotControllerService.class);
+	  lanServiceIntent = new Intent(this, FtcRobotControllerLanService.class);
+	  networkUpdateFilter = new IntentFilter();
+	  networkUpdateFilter.addAction(WifiManager.NETWORK_STATE_CHANGED_ACTION);
+
+	  ipUpdaterReceiver = new WifiIPUpdaterReceiver(this, textWifiDirectStatus);
+
+
     if (USE_DEVICE_EMULATION) { ModernRoboticsHardwareFactory.enableDeviceEmulation(); }
+
+	  useLANconnection = preferences.getBoolean("use_lan_connection", false);
+
+
   }
+	//connection starting and stopping functions
+	private void startLAN()
+	{
+		bindService(lanServiceIntent, connection, Context.BIND_AUTO_CREATE);
+		registerReceiver(ipUpdaterReceiver, networkUpdateFilter);
+	}
+	private void stopLAN()
+	{
+		stopService(lanServiceIntent);
+		unbindService(connection);
+		unregisterReceiver(ipUpdaterReceiver);
+	}
+
+
+	private void startWD()
+	{
+		bindService(wdServiceIntent, connection, Context.BIND_AUTO_CREATE);
+	}
+	private void stopWD()
+	{
+		stopService(wdServiceIntent);
+		unbindService(connection);
+	}
+
 
   @Override
   protected void onStart() {
@@ -189,8 +234,14 @@ public class FtcRobotControllerActivity extends Activity {
     // save 4MB of logcat to the SD card
     RobotLog.writeLogcatToDisk(this, 4 * 1024);
 
-    Intent intent = new Intent(this, FtcRobotControllerService.class);
-    bindService(intent, connection, Context.BIND_AUTO_CREATE);
+    if(useLANconnection)
+    {
+	    startLAN();
+    }
+    else
+    {
+	    startWD();
+    }
 
     utility.updateHeader(Utility.NO_FILE, R.string.pref_hardware_config_filename, R.id.active_filename, R.id.included_header);
 
@@ -198,12 +249,12 @@ public class FtcRobotControllerActivity extends Activity {
 
     entireScreenLayout.setOnTouchListener(new View.OnTouchListener()
     {
-      @Override
-      public boolean onTouch(View v, MotionEvent event)
-      {
-        dimmer.handleDimTimer();
-        return false;
-      }
+	    @Override
+	    public boolean onTouch(View v, MotionEvent event)
+	    {
+		    dimmer.handleDimTimer();
+		    return false;
+	    }
     });
   }
 
@@ -244,8 +295,10 @@ public class FtcRobotControllerActivity extends Activity {
 
 
   @Override
-  public boolean onCreateOptionsMenu(Menu menu) {
-    getMenuInflater().inflate(R.menu.ftc_robot_controller, menu);
+  public boolean onCreateOptionsMenu(Menu menu)
+  {
+	  getMenuInflater().inflate(R.menu.ftc_robot_controller, menu);
+	  menu.findItem(R.id.action_toggle_lan).setTitle(useLANconnection ? R.string.lan_disable_menu_item : R.string.lan_enable_menu_item);
     return true;
   }
 
@@ -275,6 +328,23 @@ public class FtcRobotControllerActivity extends Activity {
         return true;
       case R.id.action_change_wifi_channel:
 		  startActivity(new Intent(this, FtcWifiChannelSelectorActivity.class));
+	    case R.id.action_toggle_lan:
+		    if(useLANconnection)
+		    {
+			    stopLAN();
+			    startWD();
+
+			    item.setTitle(R.string.lan_enable_menu_item);
+			    useLANconnection = false;
+		    }
+		    else
+		    {
+			    stopWD();
+			    startLAN();
+
+			    item.setTitle(R.string.lan_disable_menu_item);
+			    useLANconnection = true;
+		    }
       default:
         return super.onOptionsItemSelected(item);
     }
@@ -312,7 +382,10 @@ public class FtcRobotControllerActivity extends Activity {
     controllerService = service;
     updateUI.setControllerService(controllerService);
 
-    callback.wifiDirectUpdate(controllerService.getWifiDirectStatus());
+	  if(!useLANconnection)
+	  {
+		  callback.wifiDirectUpdate(controllerService.getWifiDirectStatus());
+	  }
     callback.robotUpdate(controllerService.getRobotStatus());
     requestRobotSetup();
   }

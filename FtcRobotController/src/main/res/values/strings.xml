@@ -36,6 +36,8 @@
   <string name="info_emoji">🚩</string>
     <string name="change_channel_menu_item">Change Channel</string>
     <string name="choose_config_menu_item">Hardware Config…</string>
+    <string name="lan_enable_menu_item">Enable LAN Mode</string>
+    <string name="lan_disable_menu_item">Disable LAN Mode</string>
 
 
 </resources>
