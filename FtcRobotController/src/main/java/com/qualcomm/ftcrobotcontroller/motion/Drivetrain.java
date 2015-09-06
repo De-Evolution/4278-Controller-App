@@ -8,9 +8,13 @@ import com.qualcomm.ftcrobotcontroller.utils.RobotMath;
 import com.qualcomm.ftcrobotcontroller.utils.Stopper;
 import com.qualcomm.robotcore.eventloop.opmode.OpModeManager;
 import com.qualcomm.robotcore.exception.RobotCoreException;
+import com.qualcomm.robotcore.hardware.DcMotor;
+import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.robocol.Telemetry;
 
 import java.lang.reflect.Field;
+import java.util.Map;
+import java.util.regex.Pattern;
 
 /**
  * Created by Jamie on 8/23/2015.
@@ -32,6 +36,48 @@ public class Drivetrain
 	MotorGroup rightMotors;
 
 	Telemetry telemetry;
+
+	static Pattern leftMotorPattern, rightMotorPattern;
+
+	static
+	{
+		leftMotorPattern =  Pattern.compile("left.*", Pattern.CASE_INSENSITIVE);
+		rightMotorPattern =  Pattern.compile("right.*", Pattern.CASE_INSENSITIVE);
+	}
+
+	/**
+	 * Builds a drivetrain, finding all motors that start with "left" or "right".
+	 * @param useEncoders
+	 * @param wheelbase
+	 * @param wheelCircumference
+	 * @param telemetry
+	 * @param map
+	 * @return
+	 */
+	public static Drivetrain make(boolean useEncoders, double wheelbase, double wheelCircumference, Telemetry telemetry, HardwareMap map)
+	{
+		MotorGroup leftMotorGroup = new MotorGroup(useEncoders);
+		MotorGroup rightMotorGroup = new MotorGroup(useEncoders);
+
+		for(Map.Entry<String, DcMotor> motorEntry : map.dcMotor.entrySet())
+		{
+			if(leftMotorPattern.matcher(motorEntry.getKey()).matches())
+			{
+				leftMotorGroup.addMotor(motorEntry.getValue());
+				RoboLog.debug("Adding left motor " + motorEntry.getKey() + " to drivetrain");
+			}
+			else if(rightMotorPattern.matcher(motorEntry.getKey()).matches())
+			{
+				rightMotorGroup.addMotor(motorEntry.getValue());
+
+				RoboLog.debug("Adding right motor " + motorEntry.getKey() + " to drivetrain");
+			}
+		}
+
+		leftMotorGroup.setInverted(true);
+
+		return new Drivetrain(wheelbase, wheelCircumference, leftMotorGroup, rightMotorGroup, telemetry);
+	}
 
 	/**
 	 *
@@ -123,7 +169,7 @@ public class Drivetrain
 		
 		while((leftPos = leftMotors.getCurrentPosition()) < enc && (rightPos = rightMotors.getCurrentPosition()) < enc)
 		{
-			telemetry.addData("moveForward", String.format("moveForward(): left: %d%%, right: %d%%", leftPos * 100 / enc, rightPos * 100 / enc));
+			telemetry.addData("moveForward()", String.format("left: %d%%, right: %d%%", leftPos * 100 / enc, rightPos * 100 / enc));
 			if (System.currentTimeMillis() - startTime > msec)
 			{
 				lockdownRobot();
@@ -132,6 +178,8 @@ public class Drivetrain
 
 			pause(5);
 		}
+
+		telemetry.addData("moveForward()", "Done!");
 		
 		stopMotors();
 		

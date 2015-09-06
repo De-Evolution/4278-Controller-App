@@ -42,7 +42,6 @@ import android.content.SharedPreferences;
 import android.content.res.Configuration;
 import android.hardware.usb.UsbManager;
 import android.net.ConnectivityManager;
-import android.net.wifi.WifiManager;
 import android.os.Bundle;
 import android.os.IBinder;
 import android.preference.PreferenceManager;
@@ -200,7 +199,6 @@ public class FtcRobotControllerActivity extends Activity {
     if (USE_DEVICE_EMULATION) { ModernRoboticsHardwareFactory.enableDeviceEmulation(); }
 
 	  useLANconnection = preferences.getBoolean("use_lan_connection", false);
-
 
   }
 	//connection starting and stopping functions

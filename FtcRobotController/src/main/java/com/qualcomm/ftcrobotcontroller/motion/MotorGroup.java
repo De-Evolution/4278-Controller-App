@@ -5,7 +5,6 @@ import com.qualcomm.ftcrobotcontroller.utils.RobotMath;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorController;
 
-import java.lang.reflect.Array;
 import java.util.ArrayList;
 
 /**
@@ -26,6 +25,9 @@ public class MotorGroup
 	private DcMotorController.RunMode currentMode;
 
 	boolean hasEncoder;
+
+	//stored position of the encoder so that it can be pseudo-reset.
+	int encoderIgnoreDistance;
 
 	/**
 	 *
@@ -73,11 +75,14 @@ public class MotorGroup
 		if(motorIndex != -1)
 		{
 			preferredEncoderNum = motorIndex;
+
+			encoderIgnoreDistance = toUse.getCurrentPosition();
 		}
 		else
 		{
 			RoboLog.unexpected("MotorGroup.setEncoderMotor() called with a motor that wasn't in the group!");
 		}
+
 	}
 
 	/**
@@ -180,6 +185,8 @@ public class MotorGroup
 
 	/**
 	 * Send the reset command to the encoder and wait for it to be reset.
+	 *
+	 * THIS ONLY WORKS WHEN RUN FROM A LINEAR OPMODE, OTHERWISE IT WILL HANG YOUR PROGRAM!!
 	 */
 	public void resetEncoderBlocking()
 	{
@@ -203,6 +210,8 @@ public class MotorGroup
 
 		RoboLog.debug("Encoder reset took " + (System.nanoTime() - startTime) + " ns");
 
+
+		encoderIgnoreDistance = 0;
 		motorWithEncoder.setChannelMode(currentMode);
 	}
 
@@ -212,7 +221,7 @@ public class MotorGroup
 	 */
 	public int getCurrentPosition()
 	{
-		return getMotorWithEncoder().getCurrentPosition();
+		return getMotorWithEncoder().getCurrentPosition() - encoderIgnoreDistance;
 	}
 
 	/**
@@ -234,5 +243,11 @@ public class MotorGroup
 		}
 	}
 
-
+	/**
+	 * Pseudo-resets the encoder distance using an internal counter.
+	 */
+	public void resetEncoder()
+	{
+		encoderIgnoreDistance = getMotorWithEncoder().getCurrentPosition();
+	}
 }

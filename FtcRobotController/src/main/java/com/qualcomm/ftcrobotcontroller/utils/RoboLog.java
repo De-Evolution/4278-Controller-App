@@ -2,8 +2,13 @@ package com.qualcomm.ftcrobotcontroller.utils;
 
 import android.util.Log;
 
+import com.qualcomm.ftcrobotcontroller.FtcRobotControllerActivity;
+import com.qualcomm.robotcore.robocol.Telemetry;
+
 public class RoboLog
 {
+
+	public static Telemetry telemetryToUse;
 
 	/**
 	 * Log a FATAL error, after which the robot cannot (properly) function. <br>
@@ -12,6 +17,11 @@ public class RoboLog
 	public static void fatal( String message)
 	{
 		Log.e("Robot-Fatal", message);
+		if(telemetryToUse != null)
+		{
+
+			telemetryToUse.addData("RobotFatal", "\u1f4a3\udca3 " + message); //bomb emoji
+		}
 	}
 	
 	/**
@@ -21,6 +31,10 @@ public class RoboLog
 	public static void recoverable(String message)
 	{
 		Log.e("Robot-Recoverable", message);
+		if(telemetryToUse != null)
+		{
+			telemetryToUse.addData("RobotRecoverable", "\ud83d\udeab " + message); //no-entry emoji
+		}
 	}
 	
 	/**
@@ -30,6 +44,10 @@ public class RoboLog
 	public static void unusual(String message)
 	{
 		Log.w("Robot-Unusual", message);
+		if(telemetryToUse != null)
+		{
+			telemetryToUse.addData("RobotUnusual", "\u26a0 " + message);
+		}
 	}
 	
 	/**
@@ -38,6 +56,10 @@ public class RoboLog
 	public static void info(String message)
 	{
 		Log.i("Robot-Info", message);
+		if(telemetryToUse != null)
+		{
+			telemetryToUse.addData("RobotInfo", "\2709" + message);
+		}
 	}
 	
 	/**
@@ -56,5 +78,9 @@ public class RoboLog
 	public static void unexpected( String message)
 	{
 		Log.wtf("Robot-Unexpected", "...what? " + message);
+		if(telemetryToUse != null)
+		{
+			telemetryToUse.addData("RobotUnexpected", "\ud83d\ude27 " + message);
+		}
 	}
 }

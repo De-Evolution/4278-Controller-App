@@ -31,9 +31,6 @@
   <string name="pref_launch_configure">pref_launch_configure</string>
   <string name="pref_launch_autoconfigure">pref_launch_autoconfigure</string>
 
-  <string name="warning_sign_emoji">⚠️</string>
-  <string name="error_emoji">🚫</string>
-  <string name="info_emoji">🚩</string>
     <string name="change_channel_menu_item">Change Channel</string>
     <string name="choose_config_menu_item">Hardware Config…</string>
     <string name="lan_enable_menu_item">Enable LAN Mode</string>

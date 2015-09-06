@@ -1,4 +1,4 @@
-/* Copyright (c) 2014, 2015 Qualcomm Technologies Inc
+/* Copyright (c) 2014 Qualcomm Technologies Inc
 
 All rights reserved.
 
@@ -32,46 +32,74 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE. */
 package com.qualcomm.ftcrobotcontroller.opmodes;
 
 import com.qualcomm.ftcrobotcontroller.RobotHonken;
-import com.qualcomm.ftcrobotcontroller.utils.RoboLog;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
-import com.qualcomm.robotcore.util.ElapsedTime;
-
-import java.text.SimpleDateFormat;
-import java.util.Date;
 
 /**
  * TeleOp Mode
  * <p>
- *Enables control of the robot via the gamepad
+ * Enables control of the robot via the gamepad
  */
-public class NullOp extends OpMode {
+public class BasicTeleOp extends OpMode {
 
-  private String startDate;
-  private ElapsedTime runtime = new ElapsedTime();
 
 	RobotHonken robot;
+	/**
+	 * Constructor
+	 */
+	public BasicTeleOp() {
 
-  /*
-   * Code to run when the op mode is first enabled goes here
-   * @see com.qualcomm.robotcore.eventloop.opmode.OpMode#start()
-   */
-  @Override
-  public void init() {
-    startDate = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss").format(new Date());
-	  robot = new RobotHonken(telemetry, hardwareMap);
-    runtime.reset();
+	}
 
-	  RoboLog.fatal("ERROR!!!!");
-  }
+	/*
+	 * Code to run when the op mode is initialized goes here
+	 * 
+	 * @see com.qualcomm.robotcore.eventloop.opmode.OpMode#init()
+	 */
+	@Override
+	public void init() {
 
-  /*
-   * This method will be called repeatedly in a loop
-   * @see com.qualcomm.robotcore.eventloop.opmode.OpMode#loop()
-   */
-  @Override
-  public void loop() {
-    RoboLog.unexpected("NullOp started at " + startDate);
-    RoboLog.unusual("running for " + runtime.toString());
 
-  }
+		/*
+		 * Use the hardwareMap to get the dc motors and servos by name. Note
+		 * that the names of the devices must match the names used when you
+		 * configured your robot and created the configuration file.
+		 */
+		robot = new RobotHonken(telemetry, hardwareMap);
+	}
+
+	/*
+	 * This method will be called repeatedly in a loop
+	 * 
+	 * @see com.qualcomm.robotcore.eventloop.opmode.OpMode#run()
+	 */
+	@Override
+	public void loop() {
+
+		/*
+		 * Gamepad 1
+		 * 
+		 * Gamepad 1 controls the motors via the left stick, and it controls the
+		 * wrist/claw via the a,b, x, y buttons
+		 */
+
+		// throttle: left_stick_y ranges from -1 to 1, where -1 is full up, and
+		// 1 is full down
+		// direction: left_stick_x ranges from -1 to 1, where -1 is full left
+		// and 1 is full right
+		float throttle = -gamepad1.left_stick_y;
+		float direction = gamepad1.left_stick_x;
+		// write the values to the motors
+		robot.drivetrain.arcadeDrive(gamepad1.left_stick_x, gamepad1.left_stick_y);
+
+	}
+
+	/*
+	 * Code to run when the op mode is first disabled goes here
+	 * 
+	 * @see com.qualcomm.robotcore.eventloop.opmode.OpMode#stop()
+	 */
+	@Override
+	public void stop() {
+
+	}
 }
