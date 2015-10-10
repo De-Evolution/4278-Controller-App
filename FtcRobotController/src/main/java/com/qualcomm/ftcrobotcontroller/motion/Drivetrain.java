@@ -17,7 +17,7 @@ import java.util.Map;
 import java.util.regex.Pattern;
 
 /**
- * Created by Jamie on 8/23/2015.
+ * NOTE: ALL CONTROLLED MOVEMENT FUNCTIONS IN THIS CLASS MUST BE RUN FROM A LinearOpMode OR THEY WILL HANG THE ROBOT!
  */
 public class Drivetrain
 {
@@ -41,12 +41,12 @@ public class Drivetrain
 
 	static
 	{
-		leftMotorPattern =  Pattern.compile("left.*", Pattern.CASE_INSENSITIVE);
-		rightMotorPattern =  Pattern.compile("right.*", Pattern.CASE_INSENSITIVE);
+		leftMotorPattern =  Pattern.compile("(left.*motor.*)|(m.*left.*)", Pattern.CASE_INSENSITIVE);
+		rightMotorPattern =  Pattern.compile("(right.*motor.*)|(m.*right.*)", Pattern.CASE_INSENSITIVE);
 	}
 
 	/**
-	 * Builds a drivetrain, finding all motors that start with "left" or "right".
+	 * Builds a drivetrain, finding all motors like "leftFooMotor" or "mLeft1"
 	 * @param useEncoders
 	 * @param wheelbase
 	 * @param wheelCircumference
@@ -154,7 +154,7 @@ public class Drivetrain
 	 * @param cm
 	 * @param msec  Timeout after which the robot will shut down (because it got stuck or otherwise failed). Set to 0 to disable.
 	 */
-	void moveForward(double cm, int msec)
+	public void moveForward(double cm, int msec)
 	{
 		clearEncoders();
 		int enc = Math.abs(getEncoderByCm(cm));
