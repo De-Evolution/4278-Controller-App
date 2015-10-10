@@ -20,7 +20,7 @@ public class RoboLog
 		if(telemetryToUse != null)
 		{
 
-			telemetryToUse.addData("RobotFatal", "\u1f4a3\udca3 " + message); //bomb emoji
+			telemetryToUse.addData("\u1f4a3\udca3", message); //bomb emoji
 		}
 	}
 	
@@ -33,7 +33,7 @@ public class RoboLog
 		Log.e("Robot-Recoverable", message);
 		if(telemetryToUse != null)
 		{
-			telemetryToUse.addData("RobotRecoverable", "\ud83d\udeab " + message); //no-entry emoji
+			telemetryToUse.addData("\ud83d\udeab", message); //no-entry emoji
 		}
 	}
 	
@@ -46,7 +46,7 @@ public class RoboLog
 		Log.w("Robot-Unusual", message);
 		if(telemetryToUse != null)
 		{
-			telemetryToUse.addData("RobotUnusual", "\u26a0 " + message);
+			telemetryToUse.addData("\u26a0", message);
 		}
 	}
 	
@@ -58,7 +58,7 @@ public class RoboLog
 		Log.i("Robot-Info", message);
 		if(telemetryToUse != null)
 		{
-			telemetryToUse.addData("RobotInfo", "\2709" + message);
+			telemetryToUse.addData("\2709", message);
 		}
 	}
 	
@@ -80,7 +80,7 @@ public class RoboLog
 		Log.wtf("Robot-Unexpected", "...what? " + message);
 		if(telemetryToUse != null)
 		{
-			telemetryToUse.addData("RobotUnexpected", "\ud83d\ude27 " + message);
+			telemetryToUse.addData("\ud83d\ude27", message);
 		}
 	}
 }
