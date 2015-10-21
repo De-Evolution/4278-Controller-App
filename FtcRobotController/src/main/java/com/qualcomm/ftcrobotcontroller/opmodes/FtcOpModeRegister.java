@@ -63,7 +63,7 @@ public class FtcOpModeRegister implements OpModeRegister {
 
 	  manager.register("AutoTest", LinearAutoTest.class);
 
-	  manager.register("BasicTeleOp", BasicTeleOp.class);
+	  manager.register("HonkenTeleOp", HonkenTeleOp.class);
 
 
   }

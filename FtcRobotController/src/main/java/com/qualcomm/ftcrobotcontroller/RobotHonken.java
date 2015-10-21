@@ -3,20 +3,21 @@ package com.qualcomm.ftcrobotcontroller;
 import com.qualcomm.ftcrobotcontroller.motion.Drivetrain;
 import com.qualcomm.ftcrobotcontroller.utils.RoboLog;
 import com.qualcomm.ftcrobotcontroller.utils.Units;
+import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.robocol.Telemetry;
 
 /**
- * Created by Jamie on 9/4/2015.
+ * Robot class for Honken
  */
 public class RobotHonken
 {
 	public Drivetrain drivetrain;
 
-	public RobotHonken(Telemetry telemetry, HardwareMap map)
+	public RobotHonken(OpMode opMode)
 	{
-		drivetrain = Drivetrain.make(true, 25, 7.3 * Units.CM * Math.PI, telemetry, map);
+		drivetrain = Drivetrain.make(false, 25, 7.3 * Units.CM * Math.PI, opMode);
 
-		RoboLog.telemetryToUse = telemetry;
+		RoboLog.telemetryToUse = opMode.telemetry;
 	}
 }

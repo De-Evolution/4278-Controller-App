@@ -204,7 +204,10 @@ public class MotorGroup
 			}
 			catch (InterruptedException e)
 			{
-				e.printStackTrace();
+				RoboLog.unusual("Encoder reset interrupted!");
+				motorWithEncoder.setChannelMode(currentMode);
+				resetEncoder();
+				return;
 			}
 		}
 

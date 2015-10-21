@@ -37,7 +37,7 @@ import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.IrSeekerSensor;
 
 /**
- * A simple example of a linear op mode that will approach an IR beacon
+ * Test opmode that drives forward
  */
 public class LinearAutoTest extends LinearOpMode {
 
@@ -46,7 +46,7 @@ public class LinearAutoTest extends LinearOpMode {
 
   @Override
   public void runOpMode() throws InterruptedException {
-	  robot = new RobotHonken(telemetry, hardwareMap);
+	  robot = new RobotHonken(this);
 
 		robot.drivetrain.moveForward(150, 5000);
   }

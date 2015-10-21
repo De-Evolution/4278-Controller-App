@@ -1,18 +1,13 @@
 package com.qualcomm.ftcrobotcontroller.motion;
 
-import com.qualcomm.ftccommon.FtcEventLoop;
-import com.qualcomm.ftcrobotcontroller.FtcRobotControllerActivity;
-import com.qualcomm.ftcrobotcontroller.motion.MotorGroup;
 import com.qualcomm.ftcrobotcontroller.utils.RoboLog;
 import com.qualcomm.ftcrobotcontroller.utils.RobotMath;
 import com.qualcomm.ftcrobotcontroller.utils.Stopper;
-import com.qualcomm.robotcore.eventloop.opmode.OpModeManager;
-import com.qualcomm.robotcore.exception.RobotCoreException;
+import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
+import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.hardware.DcMotor;
-import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.robocol.Telemetry;
 
-import java.lang.reflect.Field;
 import java.util.Map;
 import java.util.regex.Pattern;
 
@@ -35,6 +30,7 @@ public class Drivetrain
 	MotorGroup leftMotors;
 	MotorGroup rightMotors;
 
+	LinearOpMode linearOpMode;
 	Telemetry telemetry;
 
 	static Pattern leftMotorPattern, rightMotorPattern;
@@ -50,16 +46,15 @@ public class Drivetrain
 	 * @param useEncoders
 	 * @param wheelbase
 	 * @param wheelCircumference
-	 * @param telemetry
-	 * @param map
+	 * @param opMode the OpMode currentlhy running
 	 * @return
 	 */
-	public static Drivetrain make(boolean useEncoders, double wheelbase, double wheelCircumference, Telemetry telemetry, HardwareMap map)
+	public static Drivetrain make(boolean useEncoders, double wheelbase, double wheelCircumference, OpMode opMode)
 	{
 		MotorGroup leftMotorGroup = new MotorGroup(useEncoders);
 		MotorGroup rightMotorGroup = new MotorGroup(useEncoders);
 
-		for(Map.Entry<String, DcMotor> motorEntry : map.dcMotor.entrySet())
+		for(Map.Entry<String, DcMotor> motorEntry : opMode.hardwareMap.dcMotor.entrySet())
 		{
 			if(leftMotorPattern.matcher(motorEntry.getKey()).matches())
 			{
@@ -76,7 +71,7 @@ public class Drivetrain
 
 		leftMotorGroup.setInverted(true);
 
-		return new Drivetrain(wheelbase, wheelCircumference, leftMotorGroup, rightMotorGroup, telemetry);
+		return new Drivetrain(wheelbase, wheelCircumference, leftMotorGroup, rightMotorGroup, opMode);
 	}
 
 	/**
@@ -85,7 +80,7 @@ public class Drivetrain
 	 *
 	 * @param wheelCircumference the circumference of the robot's (power) wheels
 	 */
-	public Drivetrain(double wheelbase, double wheelCircumference, MotorGroup leftMotors, MotorGroup rightMotors, Telemetry telemetry)
+	public Drivetrain(double wheelbase, double wheelCircumference, MotorGroup leftMotors, MotorGroup rightMotors, OpMode opMode)
 	{
 		this.wheelCircumference = wheelCircumference;
 
@@ -94,11 +89,30 @@ public class Drivetrain
 		this.leftMotors = leftMotors;
 		this.rightMotors = rightMotors;
 
-		this.telemetry = telemetry;
+		if(opMode instanceof LinearOpMode)
+		{
+			this.linearOpMode = (LinearOpMode) opMode;
+		}
+		this.telemetry = opMode.telemetry;
 	}
 
-	void pause() {
-		pause(PAUSE_TIME);
+	/**
+	 * Wait for the next hardware cycle.
+	 * @return false if the wait was interrupted (because the driver pressed stop)
+	 */
+	boolean pause()
+	{
+		try
+		{
+			linearOpMode.waitOneFullHardwareCycle();
+			return true;
+		}
+		catch (InterruptedException e)
+		{
+			RoboLog.unusual("Autonomous Move Interrupted!");
+			return false;
+		}
+
 	}
 
 	void pause(long millis) {
@@ -151,7 +165,7 @@ public class Drivetrain
 
 	/**
 	 * Move forward a distance.
-	 * @param cm
+	 * @param cm How far to move
 	 * @param msec  Timeout after which the robot will shut down (because it got stuck or otherwise failed). Set to 0 to disable.
 	 */
 	public void moveForward(double cm, int msec)
@@ -176,8 +190,11 @@ public class Drivetrain
 				return;
 			}
 
-			pause(5);
-		}
+			if(!pause())
+			{
+				break;
+			}
+	}
 
 		telemetry.addData("moveForward()", "Done!");
 		
@@ -200,7 +217,10 @@ public class Drivetrain
 			if(System.currentTimeMillis() - startTime > MAX_TURN_TIME)
 				lockdownRobot();
 
-			pause(5);
+			if(!pause())
+			{
+				break;
+			}
 		}
 
 		leftMotors.stopMotors();
@@ -221,7 +241,10 @@ public class Drivetrain
 			if(System.currentTimeMillis() - startTime > MAX_TURN_TIME)
 				lockdownRobot();
 
-			pause(5);
+			if(!pause())
+			{
+				break;
+			}
 		}
 		
 		rightMotors.stopMotors();
@@ -233,33 +256,11 @@ public class Drivetrain
 	 * Perform an in-place turn to the right.
 	 *
 	 * Accepts negative values.
-	 * @param degs
+	 * @param degs the number of degree to turn
 	 */
 	public void turnRight(double degs)
 	{
-		//always positive
-		int enc = getEncoderByCm(turningCircleCircumference * (Math.abs(degs) / 360.0));
-
-		clearEncoders();
-
-		leftMotors.setTargetPosition(RobotMath.floor_double_int(-1 * RobotMath.sgn(degs) * enc));
-		rightMotors.setTargetPosition(RobotMath.floor_double_int(RobotMath.sgn(degs) * enc));
-
-		long startTime = System.currentTimeMillis();
-
-		while(Math.abs(leftMotors.getCurrentPosition()) < enc && Math.abs(rightMotors.getCurrentPosition()) < enc)
-		{
-			if(System.currentTimeMillis() - startTime > MAX_TURN_TIME)
-			{
-				lockdownRobot();
-				return;
-			}
-
-			pause(5);
-		}
-
-		stopMotors();
-		pause();
+		turnLeft(-degs);
 	}
 
 	/**
@@ -267,7 +268,7 @@ public class Drivetrain
 	 *
 	 * Accepts negative values.
 	 *
-	 * @param degs
+	 * @param degs the number of degrees to turn
 	 */
 	public void turnLeft(double degs)
 	{
@@ -289,7 +290,10 @@ public class Drivetrain
 				return;
 			}
 
-			pause(5);
+			if(!pause())
+			{
+				break;
+			}
 		}
 
 		stopMotors();
@@ -298,8 +302,8 @@ public class Drivetrain
 
 	/**
 	 *  Drive by specifying powers for the left and right wheels.
-	 * @param powLeft
-	 * @param powRight
+	 * @param powLeft the left motor power, from -1 to 1
+	 * @param powRight the right motor power, from -1 to 1
 	 */
 	public void tankDrive(double powLeft, double powRight)
 	{
@@ -310,8 +314,8 @@ public class Drivetrain
 	/**
 	 * Drive by specifying a forward and a turn power.
 	 *
-	 * @param powX
-	 * @param powY
+	 * @param powX the forward power, from -1 to 1
+	 * @param powY the turn power, from -1 to 1
 	 */
 	public void arcadeDrive(double powX, double powY)
 	{
