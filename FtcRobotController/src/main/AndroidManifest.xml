@@ -3,7 +3,7 @@
           xmlns:tools="http://schemas.android.com/tools"
           package="com.qualcomm.ftcrobotcontroller"
           android:versionCode="1"
-          android:versionName="1.0">
+          android:versionName="1.2">
 
 
   <uses-permission
@@ -59,13 +59,10 @@
       android:name="com.qualcomm.ftccommon.FtcRobotControllerSettingsActivity"
       android:label="@string/settings_activity" >
     </activity>
-    <activity
+	<activity
         android:name="com.qualcomm.ftccommon.FtcWifiChannelSelectorActivity"
-        android:label="Wifi Direct Channel Selector" >
-        <intent-filter>
-            <action android:name="com.qualcomm.ftccommon.FtcWifiChannelSelectorActivity.intent.action.Launch"/>
-            <category android:name="android.intent.category.DEFAULT"/>
-        </intent-filter>
+        android:label="@string/title_activity_wifi_channel_selector"
+        tools:replace="android:label">
     </activity>
     <service
       android:name="com.qualcomm.ftccommon.FtcRobotControllerService"

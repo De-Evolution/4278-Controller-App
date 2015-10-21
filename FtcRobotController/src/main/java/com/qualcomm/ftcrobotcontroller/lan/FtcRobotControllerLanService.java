@@ -12,6 +12,7 @@ import com.qualcomm.robotcore.eventloop.EventLoopManager;
 import com.qualcomm.robotcore.exception.RobotCoreException;
 import com.qualcomm.robotcore.factory.RobotFactory;
 import com.qualcomm.robotcore.robot.Robot;
+import com.qualcomm.robotcore.robot.RobotState;
 import com.qualcomm.robotcore.util.RobotLog;
 import com.qualcomm.robotcore.wifi.WifiDirectAssistant;
 
@@ -212,8 +213,9 @@ public class FtcRobotControllerLanService extends FtcRobotControllerService
 	{
 		private StatusUpdater() {
 		}
-		
-		public void onStateChange(com.qualcomm.robotcore.eventloop.EventLoopManager.State state) {
+
+		@Override
+		public void onStateChange(RobotState state) {
 				switch(state)
 				{
 					case INIT:

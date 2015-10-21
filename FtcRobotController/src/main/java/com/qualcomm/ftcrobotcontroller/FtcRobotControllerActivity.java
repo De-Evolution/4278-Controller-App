@@ -67,8 +67,7 @@ import com.qualcomm.ftccommon.configuration.FtcLoadFileActivity;
 import com.qualcomm.ftcrobotcontroller.lan.FtcRobotControllerLanService;
 import com.qualcomm.ftcrobotcontroller.lan.WifiIPUpdaterReceiver;
 import com.qualcomm.ftcrobotcontroller.opmodes.FtcOpModeRegister;
-import com.qualcomm.modernrobotics.ModernRoboticsHardwareFactory;
-import com.qualcomm.robotcore.hardware.HardwareFactory;
+import com.qualcomm.hardware.HardwareFactory;
 import com.qualcomm.robotcore.hardware.configuration.Utility;
 import com.qualcomm.robotcore.util.Dimmer;
 import com.qualcomm.robotcore.util.ImmersiveMode;
@@ -188,6 +187,7 @@ public class FtcRobotControllerActivity extends Activity {
 
     hittingMenuButtonBrightensScreen();
 
+
 	  wdServiceIntent = new Intent(this, FtcRobotControllerService.class);
 	  lanServiceIntent = new Intent(this, FtcRobotControllerLanService.class);
 	  networkUpdateFilter = new IntentFilter();
@@ -196,7 +196,7 @@ public class FtcRobotControllerActivity extends Activity {
 	  ipUpdaterReceiver = new WifiIPUpdaterReceiver(this, textWifiDirectStatus);
 
 
-    if (USE_DEVICE_EMULATION) { ModernRoboticsHardwareFactory.enableDeviceEmulation(); }
+    if (USE_DEVICE_EMULATION) { HardwareFactory.enableDeviceEmulation(); }
 
 	  useLANconnection = preferences.getBoolean("use_lan_connection", false);
 
@@ -404,7 +404,7 @@ public class FtcRobotControllerActivity extends Activity {
     HardwareFactory factory;
 
     // Modern Robotics Factory for use with Modern Robotics hardware
-    ModernRoboticsHardwareFactory modernRoboticsFactory = new ModernRoboticsHardwareFactory(context);
+    HardwareFactory modernRoboticsFactory = new HardwareFactory(context);
     modernRoboticsFactory.setXmlInputStream(fis);
     factory = modernRoboticsFactory;
 
