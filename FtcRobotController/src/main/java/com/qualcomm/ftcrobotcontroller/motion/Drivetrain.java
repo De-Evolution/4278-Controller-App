@@ -27,6 +27,16 @@ public class Drivetrain
 
 	private double turningCircleCircumference;
 
+	public MotorGroup getLeftMotors()
+	{
+		return leftMotors;
+	}
+
+	public MotorGroup getRightMotors()
+	{
+		return rightMotors;
+	}
+
 	MotorGroup leftMotors;
 	MotorGroup rightMotors;
 
@@ -43,11 +53,11 @@ public class Drivetrain
 
 	/**
 	 * Builds a drivetrain, finding all motors like "leftFooMotor" or "mLeft1"
-	 * @param useEncoders
-	 * @param wheelbase
-	 * @param wheelCircumference
-	 * @param opMode the OpMode currentlhy running
-	 * @return
+	 * @param useEncoders whether or not to set the motors to run in closed-loop, encoder-backed mode
+	 * @param wheelbase the diagonal distance from the left front wheel to the right back one.  Basically, the diameter of the turning circle.
+	 * @param wheelCircumference the circumference of the wheels
+	 * @param opMode the OpMode currently running
+	 * @return a Drivetrain with the auto-added motors
 	 */
 	public static Drivetrain make(boolean useEncoders, double wheelbase, double wheelCircumference, OpMode opMode)
 	{
@@ -79,12 +89,14 @@ public class Drivetrain
 	 * @param wheelbase the diagonal distance between the front left and back right wheels, measured from where they touch the ground.
 	 *
 	 * @param wheelCircumference the circumference of the robot's (power) wheels
+	 *
+	 * NOTE: both motorgroups are assumed to go forward when set to positive powers. This will probably require you to invert one of them.  Drivetrain.make() already does this.
 	 */
 	public Drivetrain(double wheelbase, double wheelCircumference, MotorGroup leftMotors, MotorGroup rightMotors, OpMode opMode)
 	{
 		this.wheelCircumference = wheelCircumference;
 
-		this.turningCircleCircumference = wheelCircumference * Math.PI;
+		this.turningCircleCircumference = wheelbase * Math.PI;
 
 		this.leftMotors = leftMotors;
 		this.rightMotors = rightMotors;

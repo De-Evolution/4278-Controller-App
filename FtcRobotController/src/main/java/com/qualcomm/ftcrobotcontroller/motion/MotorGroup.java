@@ -66,7 +66,7 @@ public class MotorGroup
 	 * Set which motor to pull encoder data from.
 	 *
 	 * By default, the first one added is used.
-	 * @param toUse
+	 * @param toUse the motor to use for encoder data.
 	 */
 	public void setEncoderMotor(DcMotor toUse)
 	{
@@ -88,7 +88,7 @@ public class MotorGroup
 	/**
 	 *
 	 * @param encoded whether the group has an encoder attached.  This controls whether the motors will be set to open or closed loop mode.
-	 * @param toAdd
+	 * @param toAdd the DcMotor to add to the group
 	 */
 	public MotorGroup(boolean encoded, DcMotor... toAdd)
 	{
@@ -119,7 +119,7 @@ public class MotorGroup
 	 * Set the power of all motors in the group.
 	 *
 	 * Resets the RunMode if it was set to RUN_TO_POSITION.
-	 * @param newPower
+	 * @param newPower the power to set, from -1.0 to 1.0
 	 */
 	public void setPower(double newPower)
 	{
@@ -165,15 +165,14 @@ public class MotorGroup
 	}
 
 	/**
-	 * Get the DcMotor being used for encoder data.
-	 * @return
+	 * @return the DcMotor being used for encoder data.
 	 */
 	public DcMotor getMotorWithEncoder()
 	{
 		if(motors.size() <= preferredEncoderNum)
 		{
 			preferredEncoderNum = 0;
-			RoboLog.unusual("Tried to use a nonexisant motor to get encoder data!");
+			RoboLog.unusual("Tried to use a nonexistant motor to get encoder data!");
 		}
 		else if(!hasEncoder)
 		{
@@ -231,7 +230,7 @@ public class MotorGroup
 	 * Set the target encoder position of the motor
 	 *
 	 * Automatically sets the motors to position mode.
-	 * @param position
+	 * @param position the encoder position to move to in degrees.  Does not have to be between 0 and 359.
 	 */
 	public void setTargetPosition(int position)
 	{
