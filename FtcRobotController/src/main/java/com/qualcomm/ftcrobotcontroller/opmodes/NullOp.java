@@ -58,7 +58,7 @@ public class NullOp extends OpMode {
   @Override
   public void init() {
     startDate = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss").format(new Date());
-	  robot = new RobotHonken(telemetry, hardwareMap);
+	  robot = new RobotHonken(this);
     runtime.reset();
 
 	  RoboLog.fatal("ERROR!!!!");

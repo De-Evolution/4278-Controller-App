@@ -64,7 +64,7 @@ public class BasicTeleOp extends OpMode {
 		 * that the names of the devices must match the names used when you
 		 * configured your robot and created the configuration file.
 		 */
-		robot = new RobotHonken(telemetry, hardwareMap);
+		robot = new RobotHonken(this);
 	}
 
 	/*

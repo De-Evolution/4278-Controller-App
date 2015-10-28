@@ -316,6 +316,7 @@ public class FtcRobotControllerActivity extends Activity {
         return true;
       case R.id.action_choose_config_file:
         startActivityForResult(new Intent(this, FtcLoadFileActivity.class), LaunchActivityConstantsList.FTC_ROBOT_CONTROLLER_ACTIVITY_CONFIGURE_ROBOT);
+	      return true;
       case R.id.action_about:
         // The string to launch this activity must match what's in AndroidManifest of FtcCommon for this activity.
         Intent intent = new Intent("com.qualcomm.ftccommon.configuration.AboutActivity.intent.action.Launch");

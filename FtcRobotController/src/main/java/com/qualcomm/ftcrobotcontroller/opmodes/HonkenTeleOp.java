@@ -46,14 +46,14 @@ public class HonkenTeleOp extends ButtonListenerOpMode {
 	 */
 	@Override
 	public void loop() {
-
+		super.loop();
 		if(useTankDrive)
 		{
-			robot.drivetrain.tankDrive(gamepad1.left_stick_y, gamepad1.right_stick_y);
+			robot.drivetrain.tankDrive(-gamepad1.left_stick_y, -gamepad1.right_stick_y);
 		}
 		else
 		{
-			robot.drivetrain.arcadeDrive(gamepad1.left_stick_x, gamepad1.left_stick_y);
+			robot.drivetrain.arcadeDrive(gamepad1.left_stick_x, -gamepad1.left_stick_y);
 		}
 
 	}

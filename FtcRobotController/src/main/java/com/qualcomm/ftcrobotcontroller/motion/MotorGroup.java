@@ -76,7 +76,7 @@ public class MotorGroup
 		{
 			preferredEncoderNum = motorIndex;
 
-			encoderIgnoreDistance = toUse.getCurrentPosition();
+			//encoderIgnoreDistance = toUse.getCurrentPosition();
 		}
 		else
 		{

@@ -37,7 +37,7 @@ public abstract class ButtonListenerOpMode extends OpMode
 	
 	EnumSet<Button> readButtons()
 	{
-		EnumSet<Button> buttons = EnumSet.allOf(Button.class);
+		EnumSet<Button> buttons = EnumSet.noneOf(Button.class);
 		if(gamepad1.x)
 			buttons.add(Button.X);
 		if(gamepad1.y)

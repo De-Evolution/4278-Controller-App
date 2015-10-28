@@ -34,11 +34,11 @@ public class RobotHonken
 		rightHook = opMode.hardwareMap.servo.get("rightHook");
 
 		//only front motors have encoders
-		drivetrain.getLeftMotors().setEncoderMotor(opMode.hardwareMap.dcMotor.get("leftFrontMotor"));
-		drivetrain.getRightMotors().setEncoderMotor(opMode.hardwareMap.dcMotor.get("rightFrontMotor"));
+		drivetrain.getLeftMotors().setEncoderMotor(opMode.hardwareMap.dcMotor.get("leftBackMotor"));
+		drivetrain.getRightMotors().setEncoderMotor(opMode.hardwareMap.dcMotor.get("rightBackMotor"));
 
-		opMode.hardwareMap.dcMotor.get("leftBackMotor").setChannelMode(DcMotorController.RunMode.RUN_WITHOUT_ENCODERS);
-		opMode.hardwareMap.dcMotor.get("rightBackMotor").setChannelMode(DcMotorController.RunMode.RUN_WITHOUT_ENCODERS);
+		opMode.hardwareMap.dcMotor.get("leftFrontMotor").setChannelMode(DcMotorController.RunMode.RUN_WITHOUT_ENCODERS);
+		opMode.hardwareMap.dcMotor.get("rightFrontMotor").setChannelMode(DcMotorController.RunMode.RUN_WITHOUT_ENCODERS);
 
 		ultrasonic = opMode.hardwareMap.ultrasonicSensor.get("ultrasonic");
 	}
