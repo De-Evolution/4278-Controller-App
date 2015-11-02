@@ -6,7 +6,6 @@ import android.os.IBinder;
 
 import com.qualcomm.ftccommon.DbgLog;
 import com.qualcomm.ftccommon.FtcRobotControllerService;
-import com.qualcomm.ftcrobotcontroller.utils.RoboLog;
 import com.qualcomm.robotcore.eventloop.EventLoop;
 import com.qualcomm.robotcore.eventloop.EventLoopManager;
 import com.qualcomm.robotcore.exception.RobotCoreException;
@@ -14,14 +13,12 @@ import com.qualcomm.robotcore.factory.RobotFactory;
 import com.qualcomm.robotcore.robot.Robot;
 import com.qualcomm.robotcore.robot.RobotState;
 import com.qualcomm.robotcore.util.RobotLog;
-import com.qualcomm.robotcore.wifi.WifiDirectAssistant;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.net.InetSocketAddress;
 import java.net.SocketException;
-import java.util.Arrays;
 
 /**
  * Service which connects to the DS via LAN instead of Wifi Direct
@@ -135,7 +132,7 @@ public class FtcRobotControllerLanService extends FtcRobotControllerService
 
 			//get things that we need to access from superclass
 			Field robotField;
-			Robot robot = null;
+			Robot robot;
 			try
 			{
 				robotField = FtcRobotControllerLanService.this.getClass().getSuperclass().getDeclaredFields()[2];
@@ -152,7 +149,6 @@ public class FtcRobotControllerLanService extends FtcRobotControllerService
 			if (robot != null)
 			{
 				robot.shutdown();
-				robot = null;
 			}
 
 			try
@@ -162,6 +158,8 @@ public class FtcRobotControllerLanService extends FtcRobotControllerService
 			catch (RobotCoreException e)
 			{
 				e.printStackTrace();
+				setStatus("Robot Status: abort due to error creating robot: " + e.getClass().getSimpleName());
+				return;
 			}
 			
 			setStatus("Robot Status: scanning for USB devices");

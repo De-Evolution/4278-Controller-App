@@ -31,7 +31,6 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE. */
 
 package com.qualcomm.ftcrobotcontroller.opmodes;
 
-import com.qualcomm.ftcrobotcontroller.RobotHonken;
 import com.qualcomm.ftcrobotcontroller.utils.RoboLog;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.util.ElapsedTime;
@@ -49,8 +48,6 @@ public class NullOp extends OpMode {
   private String startDate;
   private ElapsedTime runtime = new ElapsedTime();
 
-	RobotHonken robot;
-
   /*
    * Code to run when the op mode is first enabled goes here
    * @see com.qualcomm.robotcore.eventloop.opmode.OpMode#start()
@@ -58,8 +55,9 @@ public class NullOp extends OpMode {
   @Override
   public void init() {
     startDate = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss").format(new Date());
-	  robot = new RobotHonken(this);
     runtime.reset();
+
+	  RoboLog.telemetryToUse = telemetry;
 
 	  RoboLog.fatal("ERROR!!!!");
   }
