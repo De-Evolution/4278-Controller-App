@@ -28,7 +28,7 @@ public class RobotHonken
 	{
 		RoboLog.telemetryToUse = opMode.telemetry;
 
-		drivetrain = Drivetrain.make(false, 25, 7.3 * Units.CM * Math.PI, opMode);
+		drivetrain = Drivetrain.make(true, 25, 7.3 * Units.CM * Math.PI, opMode);
 
 		leftHook = opMode.hardwareMap.servo.get("leftHook"); //servo 3
 		rightHook = opMode.hardwareMap.servo.get("rightHook");

@@ -1,8 +1,11 @@
 package com.qualcomm.ftcrobotcontroller.motion;
 
+import android.util.Log;
+
 import com.qualcomm.ftcrobotcontroller.utils.RoboLog;
 import com.qualcomm.ftcrobotcontroller.utils.RobotMath;
 import com.qualcomm.ftcrobotcontroller.utils.Stopper;
+import com.qualcomm.hardware.HiTechnicNxtDcMotorController;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.hardware.DcMotor;
@@ -20,8 +23,15 @@ public class Drivetrain
 	final static int MAX_TURN_TIME = 5000;
 
 	//360 for most encoders, 280 for NeveRest motor encoders
-	final static double ENC_COUNTS_PER_R = 280;
+	final static double ENC_COUNTS_PER_R = 360;
 	final static int PAUSE_TIME = 250;
+
+	//motor power to use for run to position moves
+	final static double MOTOR_POWER_FOR_AUTO_MOVES = .4;
+
+	final static double MOVE_COMPLETE_TOLERANCE_CM = 3;
+
+	double completionToleranceCounts;
 
 	private double wheelCircumference;
 
@@ -53,6 +63,7 @@ public class Drivetrain
 
 	/**
 	 * Builds a drivetrain, finding all motors like "leftFooMotor" or "mLeft1"
+	 * Also autodetects legacy motor controllers and uses LegacyMotorGroups if a LinearOpMode is provided
 	 * @param useEncoders whether or not to set the motors to run in closed-loop, encoder-backed mode
 	 * @param wheelbase the diagonal distance from the left front wheel to the right back one.  Basically, the diameter of the turning circle.
 	 * @param wheelCircumference the circumference of the wheels
@@ -61,8 +72,33 @@ public class Drivetrain
 	 */
 	public static Drivetrain make(boolean useEncoders, double wheelbase, double wheelCircumference, OpMode opMode)
 	{
-		MotorGroup leftMotorGroup = new MotorGroup(useEncoders);
-		MotorGroup rightMotorGroup = new MotorGroup(useEncoders);
+
+		boolean useLegacy = false;
+
+		if(opMode instanceof LinearOpMode)
+		{
+			//check for legacy motor controllers
+			for(Map.Entry<String, DcMotor> motorEntry : opMode.hardwareMap.dcMotor.entrySet())
+			{
+				if(motorEntry.getValue().getController() instanceof HiTechnicNxtDcMotorController)
+				{
+					useLegacy = true;
+				}
+			}
+		}
+
+		MotorGroup leftMotorGroup;
+		MotorGroup rightMotorGroup;
+		if(useLegacy)
+		{
+			leftMotorGroup = new MotorGroupLegacy(useEncoders, (LinearOpMode)opMode);
+			rightMotorGroup = new MotorGroupLegacy(useEncoders, (LinearOpMode)opMode);
+		}
+		else
+		{
+			leftMotorGroup  = new MotorGroup(useEncoders);
+			rightMotorGroup  = new MotorGroup(useEncoders);
+		}
 
 		for(Map.Entry<String, DcMotor> motorEntry : opMode.hardwareMap.dcMotor.entrySet())
 		{
@@ -106,13 +142,34 @@ public class Drivetrain
 			this.linearOpMode = (LinearOpMode) opMode;
 		}
 		this.telemetry = opMode.telemetry;
+
+		completionToleranceCounts = getEncoderByCm(MOVE_COMPLETE_TOLERANCE_CM);
 	}
 
 	/**
 	 * Wait for the next hardware cycle.
 	 * @return false if the wait was interrupted (because the driver pressed stop)
 	 */
-	boolean pause()
+	boolean pauseForReading()
+	{
+		try
+		{
+			linearOpMode.waitForNextHardwareCycle();
+			return true;
+		}
+		catch (InterruptedException e)
+		{
+			RoboLog.unusual("Autonomous Move Interrupted!");
+			return false;
+		}
+
+	}
+
+	/**
+	 * Wait for the next hardware cycle.
+	 * @return false if the wait was interrupted (because the driver pressed stop)
+	 */
+	boolean pauseForWriting()
 	{
 		try
 		{
@@ -127,19 +184,12 @@ public class Drivetrain
 
 	}
 
-	void pause(long millis) {
-		try
-		{
-			Thread.sleep(millis);
-		}
-		catch (InterruptedException e)
-		{
-			e.printStackTrace();
-		}
-	}
 
-
-
+	/**
+	 * Get the number of encoder ticks for the provided distance of linear movement.
+	 * @param cm
+	 * @return
+	 */
 	int getEncoderByCm(double cm)
 	{
 		return RobotMath.floor_double_int((ENC_COUNTS_PER_R) * (cm) / wheelCircumference);
@@ -176,6 +226,17 @@ public class Drivetrain
 	}
 
 	/**
+	 * Checks if the provided encoder values are close enough according to the tolerance for the move (or at least that side) to be considered done.
+	 * @param current
+	 * @param desired
+	 * @return
+	 */
+	private boolean isCloseEnough(int current, int desired)
+	{
+		return Math.abs(current - desired)  < completionToleranceCounts;
+	}
+
+	/**
 	 * Move forward a distance.
 	 * @param cm How far to move
 	 * @param msec  Timeout after which the robot will shut down (because it got stuck or otherwise failed). Set to 0 to disable.
@@ -188,21 +249,21 @@ public class Drivetrain
 		
 		long startTime = System.currentTimeMillis();
 		
-		leftMotors.setTargetPosition(enc);
-		rightMotors.setTargetPosition(enc);
+		leftMotors.setTargetPosition(enc, MOTOR_POWER_FOR_AUTO_MOVES);
+		rightMotors.setTargetPosition(enc, MOTOR_POWER_FOR_AUTO_MOVES);
 
-		int leftPos, rightPos;
+		int leftPos, rightPos = 0;
 		
-		while((leftPos = leftMotors.getCurrentPosition()) < enc && (rightPos = rightMotors.getCurrentPosition()) < enc)
+		while(!isCloseEnough(leftPos = leftMotors.getCurrentPosition(), enc) && !isCloseEnough(rightPos = rightMotors.getCurrentPosition(), enc))
 		{
-			telemetry.addData("moveForward()", String.format("left: %d%%, right: %d%%", leftPos * 100 / enc, rightPos * 100 / enc));
+			Log.d("moveForward()", String.format("left: %d%%, right: %d%%", leftPos * 100 / enc, rightPos * 100 / enc));
 			if (System.currentTimeMillis() - startTime > msec)
 			{
 				lockdownRobot();
 				return;
 			}
 
-			if(!pause())
+			if(!pauseForReading())
 			{
 				break;
 			}
@@ -212,7 +273,7 @@ public class Drivetrain
 		
 		stopMotors();
 		
-		pause();
+		pauseForWriting();
 	}
 
 	//arc to the right (set LEFT motors) a given amount of degrees
@@ -220,7 +281,7 @@ public class Drivetrain
 		int enc = getEncoderByCm(2 * turningCircleCircumference * (Math.abs(degs) / 360.0));
 
 		leftMotors.resetEncoderBlocking();
-		leftMotors.setTargetPosition(enc);
+		leftMotors.setTargetPosition(enc, MOTOR_POWER_FOR_AUTO_MOVES);
 
 		long startTime = System.currentTimeMillis();
 
@@ -229,22 +290,23 @@ public class Drivetrain
 			if(System.currentTimeMillis() - startTime > MAX_TURN_TIME)
 				lockdownRobot();
 
-			if(!pause())
+			if(!pauseForReading())
 			{
 				break;
 			}
 		}
 
 		leftMotors.stopMotors();
-		pause();
+		pauseForWriting();
 	}
 	
 	//arc to the left (set RIGHT motors) a given amount of degrees
-	public void arcLeft(double degs) {
+	public void arcLeft(double degs)
+	{
 		int enc = getEncoderByCm(2 * turningCircleCircumference * (Math.abs(degs) / 360.0));
 		
 		rightMotors.resetEncoderBlocking();
-		rightMotors.setTargetPosition(enc);
+		rightMotors.setTargetPosition(enc, MOTOR_POWER_FOR_AUTO_MOVES);
 		
 		long startTime = System.currentTimeMillis();
 		
@@ -253,14 +315,14 @@ public class Drivetrain
 			if(System.currentTimeMillis() - startTime > MAX_TURN_TIME)
 				lockdownRobot();
 
-			if(!pause())
+			if(!pauseForReading())
 			{
 				break;
 			}
 		}
 		
 		rightMotors.stopMotors();
-		pause();
+		pauseForWriting();
 	}
 
 
@@ -289,8 +351,8 @@ public class Drivetrain
 
 		clearEncoders();
 
-		leftMotors.setTargetPosition(RobotMath.floor_double_int(RobotMath.sgn(degs) * enc));
-		rightMotors.setTargetPosition(RobotMath.floor_double_int( -1 *RobotMath.sgn(degs) * enc));
+		leftMotors.setTargetPosition(RobotMath.floor_double_int(RobotMath.sgn(degs) * enc), MOTOR_POWER_FOR_AUTO_MOVES);
+		rightMotors.setTargetPosition(RobotMath.floor_double_int( -1 *RobotMath.sgn(degs) * enc), MOTOR_POWER_FOR_AUTO_MOVES);
 
 		long startTime = System.currentTimeMillis();
 
@@ -302,14 +364,14 @@ public class Drivetrain
 				return;
 			}
 
-			if(!pause())
+			if(!pauseForReading())
 			{
 				break;
 			}
 		}
 
 		stopMotors();
-		pause();
+		pauseForWriting();
 	}
 
 	/**

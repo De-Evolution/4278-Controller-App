@@ -12,9 +12,11 @@ import java.util.ArrayList;
  */
 public class MotorGroup
 {
-	private ArrayList<DcMotor> motors;
+	protected ArrayList<DcMotor> motors;
 
 	private int preferredEncoderNum = 0;
+
+	DcMotor.Direction direction = DcMotor.Direction.FORWARD;
 
 	/**
 	 * Scale factor to multiply motor power sets by.  if negative, the motor is inverted.
@@ -54,12 +56,20 @@ public class MotorGroup
 
 	public void setInverted(boolean inverted)
 	{
-		scaleFactor = Math.abs(scaleFactor) * (inverted ? -1 : 1);
+		direction = inverted ? DcMotor.Direction.REVERSE : DcMotor.Direction.FORWARD;
+		for(DcMotor motor : motors)
+		{
+			motor.setDirection(direction);
+		}
 	}
 
-	public boolean isInverted()
+	/**
+	 * Get whether the motor group direction is inverted
+	 * @return
+	 */
+	public boolean getInverted()
 	{
-		return scaleFactor < 0;
+		return direction == DcMotor.Direction.REVERSE;
 	}
 
 	/**
@@ -113,6 +123,7 @@ public class MotorGroup
 		motors.add(motor);
 		motor.setPower(0);
 		motor.setChannelMode(currentMode);
+		motor.setDirection(direction);
 	}
 
 	/**
@@ -150,7 +161,7 @@ public class MotorGroup
 		setPower(0);
 	}
 
-	public void setRunMode(DcMotorController.RunMode newMode)
+	private void setRunMode(DcMotorController.RunMode newMode)
 	{
 		this.currentMode = newMode;
 		for(DcMotor currentMotor : motors)
@@ -159,7 +170,7 @@ public class MotorGroup
 		}
 	}
 
-	public DcMotorController.RunMode getRunMode()
+	private DcMotorController.RunMode getRunMode()
 	{
 		return this.currentMode;
 	}
@@ -191,27 +202,37 @@ public class MotorGroup
 	{
 		DcMotor motorWithEncoder = getMotorWithEncoder();
 
+
 		motorWithEncoder.setChannelMode(DcMotorController.RunMode.RESET_ENCODERS);
 
 		long startTime = System.nanoTime();
 
-		while(motorWithEncoder.getCurrentPosition() != 0)
+//		while(getCurrentPosition() != 0)
+//		{
+//			try
+//			{
+//				Thread.sleep(1);
+//			}
+//			catch (InterruptedException e)
+//			{
+//				RoboLog.unusual("Encoder reset interrupted!");
+//				motorWithEncoder.setChannelMode(currentMode);
+//				resetEncoder();
+//				return;
+//			}
+//		}
+//
+//		RoboLog.debug("Encoder reset took " + (System.nanoTime() - startTime) + " ns");
+
+		try
 		{
-			try
-			{
-				Thread.sleep(1);
-			}
-			catch (InterruptedException e)
-			{
-				RoboLog.unusual("Encoder reset interrupted!");
-				motorWithEncoder.setChannelMode(currentMode);
-				resetEncoder();
-				return;
-			}
+			Thread.sleep(50);
 		}
-
-		RoboLog.debug("Encoder reset took " + (System.nanoTime() - startTime) + " ns");
-
+		catch (InterruptedException e)
+		{
+			e.printStackTrace();
+			return;
+		}
 
 		encoderIgnoreDistance = 0;
 		motorWithEncoder.setChannelMode(currentMode);
@@ -230,26 +251,36 @@ public class MotorGroup
 	 * Set the target encoder position of the motor
 	 *
 	 * Automatically sets the motors to position mode.
+	 *
+	 * NOTE: calling setPower() will return the motor to speed mode.  If you want to change the speed but keep moving to a position,
+	 * call this function again.
+	 *
 	 * @param position the encoder position to move to in degrees.  Does not have to be between 0 and 359.
+	 * @param power the motor power to use to move to this position.
 	 */
-	public void setTargetPosition(int position)
+	public void setTargetPosition(int position, double power)
 	{
 		if(currentMode != DcMotorController.RunMode.RUN_TO_POSITION)
 		{
 			setRunMode(DcMotorController.RunMode.RUN_TO_POSITION);
 		}
 
+		position += encoderIgnoreDistance;
+
 		for(DcMotor currentMotor : motors)
 		{
 			currentMotor.setTargetPosition(position);
+			currentMotor.setPower(power * scaleFactor);
 		}
 	}
 
 	/**
 	 * Pseudo-resets the encoder distance using an internal counter.
+	 *
+	 * A lot slower on the legacy MotorGroup then the regular one.
 	 */
 	public void resetEncoder()
 	{
-		encoderIgnoreDistance = getMotorWithEncoder().getCurrentPosition();
+		encoderIgnoreDistance += getCurrentPosition();
 	}
 }

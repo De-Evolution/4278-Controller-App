@@ -33,8 +33,6 @@ package com.qualcomm.ftcrobotcontroller.opmodes;
 
 import com.qualcomm.ftcrobotcontroller.RobotHonken;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
-import com.qualcomm.robotcore.hardware.DcMotor;
-import com.qualcomm.robotcore.hardware.IrSeekerSensor;
 
 /**
  * Test opmode that drives forward
@@ -48,6 +46,10 @@ public class LinearAutoTest extends LinearOpMode {
   public void runOpMode() throws InterruptedException {
 	  robot = new RobotHonken(this);
 
-		robot.drivetrain.moveForward(150, 5000);
+	  waitForStart();
+
+	  waitOneFullHardwareCycle();
+
+	  robot.drivetrain.moveForward(150, 5000);
   }
 }

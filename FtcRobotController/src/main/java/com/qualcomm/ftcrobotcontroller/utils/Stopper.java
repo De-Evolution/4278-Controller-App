@@ -64,6 +64,7 @@ public class Stopper
 		try
 		{
 			Field opModeManagerField = FtcEventLoop.class.getDeclaredFields()[1]; //why is this not a public variable?
+			opModeManagerField.setAccessible(true);
 			OpModeManager opModeManager = (OpModeManager) opModeManagerField.get(FtcRobotControllerActivity.eventLoop);
 			opModeManager.stopActiveOpMode();
 		}
