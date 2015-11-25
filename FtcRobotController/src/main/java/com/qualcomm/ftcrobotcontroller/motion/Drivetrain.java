@@ -15,15 +15,13 @@ import java.util.Map;
 import java.util.regex.Pattern;
 
 /**
- * NOTE: ALL CONTROLLED MOVEMENT FUNCTIONS IN THIS CLASS MUST BE RUN FROM A LinearOpMode OR THEY WILL HANG THE ROBOT!
+ * NOTE: ALL CONTROLLED MOVEMENT FUNCTIONS IN THIS CLASS MUST BE RUN FROM A LinearOpMode!
  */
 public class Drivetrain
 {
 
 	final static int MAX_TURN_TIME = 5000;
 
-	//360 for most encoders, 280 for NeveRest motor encoders
-	final static double ENC_COUNTS_PER_R = 360;
 	final static int PAUSE_TIME = 250;
 
 	//motor power to use for run to position moves
@@ -55,22 +53,26 @@ public class Drivetrain
 
 	static Pattern leftMotorPattern, rightMotorPattern;
 
+	//360 for most encoders, excep the NeveRest ones
+	private double encoderCountsPerRev;
+
 	static
 	{
-		leftMotorPattern =  Pattern.compile("(left.*motor.*)|(m.*left.*)", Pattern.CASE_INSENSITIVE);
-		rightMotorPattern =  Pattern.compile("(right.*motor.*)|(m.*right.*)", Pattern.CASE_INSENSITIVE);
+		leftMotorPattern =  Pattern.compile("(left.*motor.*)|((drv|drive).*left.*)", Pattern.CASE_INSENSITIVE);
+		rightMotorPattern =  Pattern.compile("(right.*motor.*)|((drv|drive).*right.*)", Pattern.CASE_INSENSITIVE);
 	}
 
 	/**
-	 * Builds a drivetrain, finding all motors like "leftFooMotor" or "mLeft1"
+	 * Builds a drivetrain, finding all motors like "leftFooMotor" or "drvLeft1"
 	 * Also autodetects legacy motor controllers and uses LegacyMotorGroups if a LinearOpMode is provided
 	 * @param useEncoders whether or not to set the motors to run in closed-loop, encoder-backed mode
 	 * @param wheelbase the diagonal distance from the left front wheel to the right back one.  Basically, the diameter of the turning circle.
 	 * @param wheelCircumference the circumference of the wheels
+	 * @param encoderCountsPerRev the number of counts the encoder reads per revolution
 	 * @param opMode the OpMode currently running
 	 * @return a Drivetrain with the auto-added motors
 	 */
-	public static Drivetrain make(boolean useEncoders, double wheelbase, double wheelCircumference, OpMode opMode)
+	public static Drivetrain make(boolean useEncoders, double wheelbase, double wheelCircumference, double encoderCountsPerRev, OpMode opMode)
 	{
 
 		boolean useLegacy = false;
@@ -117,18 +119,18 @@ public class Drivetrain
 
 		leftMotorGroup.setInverted(true);
 
-		return new Drivetrain(wheelbase, wheelCircumference, leftMotorGroup, rightMotorGroup, opMode);
+		return new Drivetrain(wheelbase, wheelCircumference, encoderCountsPerRev, leftMotorGroup, rightMotorGroup, opMode);
 	}
 
 	/**
 	 *
 	 * @param wheelbase the diagonal distance between the front left and back right wheels, measured from where they touch the ground.
-	 *
+	 * @param encoderCountsPerRev the number of counts the encoder reads per revolution
 	 * @param wheelCircumference the circumference of the robot's (power) wheels
 	 *
 	 * NOTE: both motorgroups are assumed to go forward when set to positive powers. This will probably require you to invert one of them.  Drivetrain.make() already does this.
 	 */
-	public Drivetrain(double wheelbase, double wheelCircumference, MotorGroup leftMotors, MotorGroup rightMotors, OpMode opMode)
+	public Drivetrain(double wheelbase, double wheelCircumference, double encoderCountsPerRev, MotorGroup leftMotors, MotorGroup rightMotors, OpMode opMode)
 	{
 		this.wheelCircumference = wheelCircumference;
 
@@ -144,6 +146,8 @@ public class Drivetrain
 		this.telemetry = opMode.telemetry;
 
 		completionToleranceCounts = getEncoderByCm(MOVE_COMPLETE_TOLERANCE_CM);
+
+		this.encoderCountsPerRev = encoderCountsPerRev;
 	}
 
 	/**
@@ -192,12 +196,12 @@ public class Drivetrain
 	 */
 	int getEncoderByCm(double cm)
 	{
-		return RobotMath.floor_double_int((ENC_COUNTS_PER_R) * (cm) / wheelCircumference);
+		return RobotMath.floor_double_int((encoderCountsPerRev) * (cm) / wheelCircumference);
 	}
 	
 	double getCmByEncoder(double encode) 
 	{
-		return (encode/ENC_COUNTS_PER_R)*wheelCircumference;
+		return (encode/ encoderCountsPerRev)*wheelCircumference;
 	}
 
 	/**

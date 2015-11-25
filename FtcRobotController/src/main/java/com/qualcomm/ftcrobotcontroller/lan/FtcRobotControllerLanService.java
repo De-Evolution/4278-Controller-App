@@ -121,6 +121,14 @@ public class FtcRobotControllerLanService extends FtcRobotControllerService
 		super.shutdownRobot();
 		if(this.initThread != null && this.initThread.isAlive()) {
 			this.initThread.interrupt();
+			try
+			{
+				this.initThread.join();
+			}
+			catch (InterruptedException e)
+			{
+				e.printStackTrace();
+			}
 		}
 	}
 
@@ -135,7 +143,7 @@ public class FtcRobotControllerLanService extends FtcRobotControllerService
 			Robot robot;
 			try
 			{
-				robotField = FtcRobotControllerLanService.this.getClass().getSuperclass().getDeclaredFields()[2];
+				robotField = FtcRobotControllerService.class.getSuperclass().getDeclaredFields()[2];
 				robotField.setAccessible(true);
 				robot = (Robot) robotField.get(FtcRobotControllerLanService.this);
 			}

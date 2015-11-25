@@ -65,7 +65,6 @@ public class MotorGroup
 
 	/**
 	 * Get whether the motor group direction is inverted
-	 * @return
 	 */
 	public boolean getInverted()
 	{
@@ -122,7 +121,7 @@ public class MotorGroup
 	{
 		motors.add(motor);
 		motor.setPower(0);
-		motor.setChannelMode(currentMode);
+		motor.setMode(currentMode);
 		motor.setDirection(direction);
 	}
 
@@ -166,7 +165,7 @@ public class MotorGroup
 		this.currentMode = newMode;
 		for(DcMotor currentMotor : motors)
 		{
-			currentMotor.setChannelMode(newMode);
+			currentMotor.setMode(newMode);
 		}
 	}
 
@@ -203,9 +202,9 @@ public class MotorGroup
 		DcMotor motorWithEncoder = getMotorWithEncoder();
 
 
-		motorWithEncoder.setChannelMode(DcMotorController.RunMode.RESET_ENCODERS);
+		motorWithEncoder.setMode(DcMotorController.RunMode.RESET_ENCODERS);
 
-		long startTime = System.nanoTime();
+	//	long startTime = System.nanoTime();
 
 //		while(getCurrentPosition() != 0)
 //		{
@@ -235,7 +234,7 @@ public class MotorGroup
 		}
 
 		encoderIgnoreDistance = 0;
-		motorWithEncoder.setChannelMode(currentMode);
+		motorWithEncoder.setMode(currentMode);
 	}
 
 	/**

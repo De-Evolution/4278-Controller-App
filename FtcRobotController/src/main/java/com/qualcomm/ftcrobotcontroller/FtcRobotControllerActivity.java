@@ -45,6 +45,7 @@ import android.net.ConnectivityManager;
 import android.os.Bundle;
 import android.os.IBinder;
 import android.preference.PreferenceManager;
+import android.util.Log;
 import android.view.Gravity;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -69,6 +70,7 @@ import com.qualcomm.ftcrobotcontroller.lan.WifiIPUpdaterReceiver;
 import com.qualcomm.ftcrobotcontroller.opmodes.FtcOpModeRegister;
 import com.qualcomm.hardware.HardwareFactory;
 import com.qualcomm.robotcore.hardware.configuration.Utility;
+import com.qualcomm.robotcore.robot.Robot;
 import com.qualcomm.robotcore.util.Dimmer;
 import com.qualcomm.robotcore.util.ImmersiveMode;
 import com.qualcomm.robotcore.util.RobotLog;
@@ -77,6 +79,7 @@ import com.qualcomm.robotcore.wifi.WifiDirectAssistant;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.Serializable;
+import java.lang.reflect.Field;
 
 public class FtcRobotControllerActivity extends Activity {
 
@@ -437,6 +440,24 @@ public class FtcRobotControllerActivity extends Activity {
   private void requestRobotShutdown() {
     if (controllerService == null) return;
     controllerService.shutdownRobot();
+
+	  Field robotField;
+	  Robot robot = null;
+	  try
+	  {
+		  robotField = FtcRobotControllerService.class.getDeclaredFields()[2];
+		  robotField.setAccessible(true);
+		  robot = (Robot) robotField.get(controllerService);
+	  }
+	  catch (IllegalAccessException e)
+	  {
+		  e.printStackTrace();
+	  }
+
+	  if((robot != null) && (!robot.socket.isClosed()))
+	  {
+		  Log.e("FtcRobotControllerActivity", "Error in service code! Socket was not shut down properly!");
+	  }
   }
 
   private void requestRobotRestart() {
