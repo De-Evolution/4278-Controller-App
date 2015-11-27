@@ -1,4 +1,4 @@
-package com.qualcomm.ftcrobotcontroller;
+package com.qualcomm.ftcrobotcontroller.robots;
 
 import com.qualcomm.ftcrobotcontroller.motion.Drivetrain;
 import com.qualcomm.ftcrobotcontroller.utils.RoboLog;
@@ -28,7 +28,7 @@ public class RobotHonken
 	{
 		RoboLog.telemetryToUse = opMode.telemetry;
 
-		drivetrain = Drivetrain.make(true, 25, 7.3 * Units.CM * Math.PI, 360, opMode);
+		drivetrain = Drivetrain.make(true, 25, 7.3 * Units.CM * Math.PI, 1440, opMode);
 
 		leftHook = opMode.hardwareMap.servo.get("leftHook"); //servo 3
 		rightHook = opMode.hardwareMap.servo.get("rightHook");

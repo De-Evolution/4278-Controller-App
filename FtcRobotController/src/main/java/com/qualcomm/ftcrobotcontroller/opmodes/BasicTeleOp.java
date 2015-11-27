@@ -31,7 +31,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE. */
 
 package com.qualcomm.ftcrobotcontroller.opmodes;
 
-import com.qualcomm.ftcrobotcontroller.RobotHonken;
+import com.qualcomm.ftcrobotcontroller.robots.RobotHonken;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 
 /**

@@ -1,4 +1,4 @@
-package com.qualcomm.ftcrobotcontroller;
+package com.qualcomm.ftcrobotcontroller.robots.goatefoster;
 
 import com.qualcomm.ftcrobotcontroller.motion.Drivetrain;
 import com.qualcomm.ftcrobotcontroller.motion.MotorGroup;
@@ -26,26 +26,16 @@ public class RobotGoatEFoster
 	{
 		RoboLog.telemetryToUse = opMode.telemetry;
 
-		drivetrain = Drivetrain.make(true, 25, 7.3 * Units.CM * Math.PI, 1120, opMode);
+		drivetrain = Drivetrain.make(true, 25, 9.9 * Units.CM * Math.PI, 1120, opMode);
 
 		armBrake = opMode.hardwareMap.servo.get("armBrakeServo");
 
 		armMotors = new MotorGroup(true, opMode.hardwareMap.dcMotor.get("mArmTop"), opMode.hardwareMap.dcMotor.get("mArmBottom"));
+
+		homingHallEffect = opMode.hardwareMap.digitalChannel.get("armEndstop");
 	}
 
-	public void brake()
-	{
 
-	}
 
-	public void releaseBrake()
-	{
-
-	}
-
-	public void homeArm()
-	{
-
-	}
 
 }

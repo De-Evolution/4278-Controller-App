@@ -1,6 +1,6 @@
 package com.qualcomm.ftcrobotcontroller.opmodes;
 
-import com.qualcomm.ftcrobotcontroller.RobotHonken;
+import com.qualcomm.ftcrobotcontroller.robots.RobotHonken;
 import com.qualcomm.ftcrobotcontroller.button.ButtonListenerOpMode;
 
 /**

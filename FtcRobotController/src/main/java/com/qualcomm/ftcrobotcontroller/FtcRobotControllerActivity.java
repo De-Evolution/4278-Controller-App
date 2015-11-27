@@ -456,7 +456,11 @@ public class FtcRobotControllerActivity extends Activity {
 
 	  if((robot != null) && (!robot.socket.isClosed()))
 	  {
-		  Log.e("FtcRobotControllerActivity", "Error in service code! Socket was not shut down properly!");
+		  Log.e("FtcRobotControllerAct", "Error in service code! Socket was not shut down properly!");
+	  }
+	  else
+	  {
+		  Log.i("FtcRobotControllerAct", "Socket seems to have been closed.!");
 	  }
   }
 

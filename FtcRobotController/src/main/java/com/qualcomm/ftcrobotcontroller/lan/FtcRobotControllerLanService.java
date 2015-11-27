@@ -143,7 +143,7 @@ public class FtcRobotControllerLanService extends FtcRobotControllerService
 			Robot robot;
 			try
 			{
-				robotField = FtcRobotControllerService.class.getSuperclass().getDeclaredFields()[2];
+				robotField = FtcRobotControllerService.class.getDeclaredFields()[2];
 				robotField.setAccessible(true);
 				robot = (Robot) robotField.get(FtcRobotControllerLanService.this);
 			}
