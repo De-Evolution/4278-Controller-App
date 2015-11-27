@@ -1,9 +1,9 @@
 package com.qualcomm.ftcrobotcontroller.robots.goatefoster;
 
-import com.qualcomm.ftcrobotcontroller.motion.Drivetrain;
-import com.qualcomm.ftcrobotcontroller.motion.MotorGroup;
-import com.qualcomm.ftcrobotcontroller.utils.RoboLog;
-import com.qualcomm.ftcrobotcontroller.utils.Units;
+import com.team4278.motion.Drivetrain;
+import com.team4278.motion.MotorGroup;
+import com.team4278.utils.RoboLog;
+import com.team4278.utils.Units;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.hardware.DigitalChannel;
 import com.qualcomm.robotcore.hardware.Servo;

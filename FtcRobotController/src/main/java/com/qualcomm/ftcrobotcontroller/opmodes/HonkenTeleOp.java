@@ -1,12 +1,13 @@
 package com.qualcomm.ftcrobotcontroller.opmodes;
 
 import com.qualcomm.ftcrobotcontroller.robots.RobotHonken;
-import com.qualcomm.ftcrobotcontroller.button.ButtonListenerOpMode;
+import com.team4278.ButtonListenerTeleop;
 
 /**
  * Teleop program for our 2014-15 robot, Honken.  Teally hust a drivetrain and some servo-based hooks.
  */
-public class HonkenTeleOp extends ButtonListenerOpMode {
+public class HonkenTeleOp extends ButtonListenerTeleop
+{
 
 
 	RobotHonken robot;

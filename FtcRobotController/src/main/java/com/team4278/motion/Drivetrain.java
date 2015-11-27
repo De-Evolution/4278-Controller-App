@@ -1,10 +1,10 @@
-package com.qualcomm.ftcrobotcontroller.motion;
+package com.team4278.motion;
 
 import android.util.Log;
 
-import com.qualcomm.ftcrobotcontroller.utils.RoboLog;
-import com.qualcomm.ftcrobotcontroller.utils.RobotMath;
-import com.qualcomm.ftcrobotcontroller.utils.Stopper;
+import com.team4278.utils.RoboLog;
+import com.team4278.utils.RobotMath;
+import com.team4278.utils.Stopper;
 import com.qualcomm.hardware.HiTechnicNxtDcMotorController;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
@@ -209,8 +209,8 @@ public class Drivetrain
 	 */
 	public void clearEncoders()
 	{
-		leftMotors.resetEncoderBlocking();
-		rightMotors.resetEncoderBlocking();
+		leftMotors.startEncoderReset();
+		rightMotors.startEncoderReset();
 	}
 
 	/**
@@ -284,7 +284,7 @@ public class Drivetrain
 	public void arcRight(double degs) {
 		int enc = getEncoderByCm(2 * turningCircleCircumference * (Math.abs(degs) / 360.0));
 
-		leftMotors.resetEncoderBlocking();
+		leftMotors.startEncoderReset();
 		leftMotors.setTargetPosition(enc, MOTOR_POWER_FOR_AUTO_MOVES);
 
 		long startTime = System.currentTimeMillis();
@@ -309,7 +309,7 @@ public class Drivetrain
 	{
 		int enc = getEncoderByCm(2 * turningCircleCircumference * (Math.abs(degs) / 360.0));
 		
-		rightMotors.resetEncoderBlocking();
+		rightMotors.startEncoderReset();
 		rightMotors.setTargetPosition(enc, MOTOR_POWER_FOR_AUTO_MOVES);
 		
 		long startTime = System.currentTimeMillis();

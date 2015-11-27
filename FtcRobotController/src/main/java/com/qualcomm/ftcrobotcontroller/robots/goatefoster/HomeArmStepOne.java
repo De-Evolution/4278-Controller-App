@@ -1,6 +1,6 @@
 package com.qualcomm.ftcrobotcontroller.robots.goatefoster;
 
-import com.qualcomm.ftcrobotcontroller.sequence.SequenceStep;
+import com.team4278.SequenceStep;
 
 /**
  * Created by Jamie on 11/26/2015.

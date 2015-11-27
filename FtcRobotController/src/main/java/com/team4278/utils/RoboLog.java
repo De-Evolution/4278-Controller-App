@@ -1,8 +1,7 @@
-package com.qualcomm.ftcrobotcontroller.utils;
+package com.team4278.utils;
 
 import android.util.Log;
 
-import com.qualcomm.ftcrobotcontroller.FtcRobotControllerActivity;
 import com.qualcomm.robotcore.robocol.Telemetry;
 
 public class RoboLog

@@ -1,20 +1,26 @@
-package com.qualcomm.ftcrobotcontroller.motion;
+package com.team4278.motion;
 
-import com.qualcomm.ftcrobotcontroller.utils.RoboLog;
-import com.qualcomm.ftcrobotcontroller.utils.RobotMath;
+import android.util.Pair;
+
+import com.team4278.utils.RoboLog;
+import com.team4278.utils.RobotMath;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorController;
 
 import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.Set;
 
 /**
  * Class to hold a group of motors which run at the same speed.
+ *
+ * NOTE: Updates here will not take effect until the OpMode / SequenceStep returns from loop()
  */
 public class MotorGroup
 {
-	protected ArrayList<DcMotor> motors;
+	protected Set<Pair<DcMotor, Integer>> motors;
 
-	private int preferredEncoderNum = 0;
+	private DcMotor preferredEncoderMotor;
 
 	DcMotor.Direction direction = DcMotor.Direction.FORWARD;
 
@@ -29,7 +35,6 @@ public class MotorGroup
 	boolean hasEncoder;
 
 	//stored position of the encoder so that it can be pseudo-reset.
-	int encoderIgnoreDistance;
 
 	/**
 	 *
@@ -54,12 +59,12 @@ public class MotorGroup
 		this.scaleFactor = scaleFactor * RobotMath.sgn(this.scaleFactor);
 	}
 
-	public void setInverted(boolean inverted)
+	public void setReversed(boolean inverted)
 	{
 		direction = inverted ? DcMotor.Direction.REVERSE : DcMotor.Direction.FORWARD;
-		for(DcMotor motor : motors)
+		for(Pair<DcMotor, Integer> motorPair : motors)
 		{
-			motor.setDirection(direction);
+			motorPair.first.setDirection(direction);
 		}
 	}
 
@@ -72,36 +77,13 @@ public class MotorGroup
 	}
 
 	/**
-	 * Set which motor to pull encoder data from.
-	 *
-	 * By default, the first one added is used.
-	 * @param toUse the motor to use for encoder data.
-	 */
-	public void setEncoderMotor(DcMotor toUse)
-	{
-		int motorIndex = motors.indexOf(toUse);
-
-		if(motorIndex != -1)
-		{
-			preferredEncoderNum = motorIndex;
-
-			//encoderIgnoreDistance = toUse.getCurrentPosition();
-		}
-		else
-		{
-			RoboLog.unexpected("MotorGroup.setEncoderMotor() called with a motor that wasn't in the group!");
-		}
-
-	}
-
-	/**
 	 *
 	 * @param encoded whether the group has an encoder attached.  This controls whether the motors will be set to open or closed loop mode.
 	 * @param toAdd the DcMotor to add to the group
 	 */
 	public MotorGroup(boolean encoded, DcMotor... toAdd)
 	{
-		motors = new ArrayList<DcMotor>();
+		motors = new HashSet<Pair<DcMotor, Integer>>();
 
 		currentMode = encoded ? DcMotorController.RunMode.RUN_USING_ENCODERS : DcMotorController.RunMode.RUN_WITHOUT_ENCODERS;
 
@@ -119,7 +101,7 @@ public class MotorGroup
 
 	public void addMotor(DcMotor motor)
 	{
-		motors.add(motor);
+		motors.add(new Pair<DcMotor, Integer>(motor, 0));
 		motor.setPower(0);
 		motor.setMode(currentMode);
 		motor.setDirection(direction);
@@ -138,9 +120,9 @@ public class MotorGroup
 			setRunMode(hasEncoder ? DcMotorController.RunMode.RUN_USING_ENCODERS : DcMotorController.RunMode.RUN_WITHOUT_ENCODERS);
 		}
 
-		for(DcMotor currentMotor : motors)
+		for(Pair<DcMotor, Integer> currentMotor : motors)
 		{
-			currentMotor.setPower(newPower * scaleFactor);
+			currentMotor.first.setPower(newPower * scaleFactor);
 		}
 	}
 
@@ -149,12 +131,15 @@ public class MotorGroup
 	 */
 	public void setUnlocked()
 	{
-		for(DcMotor currentMotor : motors)
+		for(Pair<DcMotor, Integer> currentMotor : motors)
 		{
-			currentMotor.setPowerFloat();
+			currentMotor.first.setPowerFloat();
 		}
 	}
 
+	/**
+	 * Sets all motors in the group to be stopped and locked.
+	 */
 	public void stopMotors()
 	{
 		setPower(0);
@@ -163,9 +148,9 @@ public class MotorGroup
 	private void setRunMode(DcMotorController.RunMode newMode)
 	{
 		this.currentMode = newMode;
-		for(DcMotor currentMotor : motors)
+		for(Pair<DcMotor, Integer> currentMotor : motors)
 		{
-			currentMotor.setMode(newMode);
+			currentMotor.first.setMode(newMode);
 		}
 	}
 
@@ -175,75 +160,32 @@ public class MotorGroup
 	}
 
 	/**
-	 * @return the DcMotor being used for encoder data.
-	 */
-	public DcMotor getMotorWithEncoder()
-	{
-		if(motors.size() <= preferredEncoderNum)
-		{
-			preferredEncoderNum = 0;
-			RoboLog.unusual("Tried to use a nonexistant motor to get encoder data!");
-		}
-		else if(!hasEncoder)
-		{
-			RoboLog.recoverable("Attempted to access encoder on a MotorGroup without one!");
-		}
-
-		return motors.get(preferredEncoderNum);
-	}
-
-	/**
-	 * Send the reset command to the encoder and wait for it to be reset.
+	 * Send the reset command to every motor.  Annoyingly, however, it will not be processed for a hardware cycle or two.
 	 *
-	 * THIS ONLY WORKS WHEN RUN FROM A LINEAR OPMODE, OTHERWISE IT WILL HANG YOUR PROGRAM!!
+	 * Send a setPower() command a few loops later to set the motor back to normal.
 	 */
-	public void resetEncoderBlocking()
+	public void startEncoderReset()
 	{
-		DcMotor motorWithEncoder = getMotorWithEncoder();
+		setRunMode(DcMotorController.RunMode.RESET_ENCODERS);
 
-
-		motorWithEncoder.setMode(DcMotorController.RunMode.RESET_ENCODERS);
-
-	//	long startTime = System.nanoTime();
-
-//		while(getCurrentPosition() != 0)
-//		{
-//			try
-//			{
-//				Thread.sleep(1);
-//			}
-//			catch (InterruptedException e)
-//			{
-//				RoboLog.unusual("Encoder reset interrupted!");
-//				motorWithEncoder.setChannelMode(currentMode);
-//				resetEncoder();
-//				return;
-//			}
-//		}
-//
-//		RoboLog.debug("Encoder reset took " + (System.nanoTime() - startTime) + " ns");
-
-		try
+		//reset encoder ignore distances
+		for(Pair<DcMotor, Integer> motorPair : motors)
 		{
-			Thread.sleep(50);
-		}
-		catch (InterruptedException e)
-		{
-			e.printStackTrace();
-			return;
-		}
+			motors.remove(motorPair);
 
-		encoderIgnoreDistance = 0;
-		motorWithEncoder.setMode(currentMode);
+			motors.add(new Pair<DcMotor, Integer>(motorPair.first, 0));
+		}
 	}
 
 	/**
 	 *
-	 * @return  The position of the motor beig used for encoder data
+	 * @return  The position of a motor in the group
 	 */
 	public int getCurrentPosition()
 	{
-		return getMotorWithEncoder().getCurrentPosition() - encoderIgnoreDistance;
+		Pair<DcMotor, Integer> motorPair = motors.iterator().next();
+
+		return motorPair.first.getCurrentPosition() - motorPair.second;
 	}
 
 	/**
@@ -264,22 +206,24 @@ public class MotorGroup
 			setRunMode(DcMotorController.RunMode.RUN_TO_POSITION);
 		}
 
-		position += encoderIgnoreDistance;
-
-		for(DcMotor currentMotor : motors)
+		for(Pair<DcMotor, Integer> motorPair : motors)
 		{
-			currentMotor.setTargetPosition(position);
-			currentMotor.setPower(power * scaleFactor);
+			motorPair.first.setTargetPosition(position + motorPair.second);
+			motorPair.first.setPower(power * scaleFactor);
 		}
 	}
 
 	/**
-	 * Pseudo-resets the encoder distance using an internal counter.
-	 *
-	 * A lot slower on the legacy MotorGroup then the regular one.
+	 * Pseudo-resets the encoder distance of each motor using an internal counter.  Unlike the the other
+	 * reset function, this completes immediately.
 	 */
-	public void resetEncoder()
+	public void softResetEncoder()
 	{
-		encoderIgnoreDistance += getCurrentPosition();
+		for(Pair<DcMotor, Integer> motorPair : motors)
+		{
+			motors.remove(motorPair);
+
+			motors.add(new Pair<DcMotor, Integer>(motorPair.first, motorPair.first.getCurrentPosition()));
+		}
 	}
 }
