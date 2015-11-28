@@ -17,7 +17,7 @@ public class HomeArmStepOne implements SequenceStep
 	@Override
 	public void init()
 	{
-		
+
 	}
 
 	@Override
