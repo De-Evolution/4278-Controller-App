@@ -25,7 +25,7 @@ public abstract class SequenceStep
 	 * Useful for showing progress information, etc.
 	 * @param message
 	 */
-	private void telemetryMessage(String message)
+	protected void telemetryMessage(String message)
 	{
 		if(RoboLog.telemetryToUse != null)
 		{
