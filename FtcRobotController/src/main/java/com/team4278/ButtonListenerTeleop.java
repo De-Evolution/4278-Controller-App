@@ -1,15 +1,15 @@
-package com.qualcomm.ftcrobotcontroller.button;
-
-import com.qualcomm.robotcore.eventloop.opmode.OpMode;
+package com.team4278;
 
 import java.util.EnumSet;
 
 /**
  * OpMode superclass which polls the controller buttons and allows the opmode to handle when they are pressed and released.
  *
- * Similar to our old Teleop.c checkJoystickButtons() system
+ * Similar to our old Teleop.c checkJoystickButtons() system.
+ *
+ * Make sure that subclasses call super.loop() in loop()!!!
  */
-public abstract class ButtonListenerOpMode extends OpMode
+public abstract class ButtonListenerTeleop extends SequenceOpMode
 {
 	/**
 	 * Enum representing the buttons on an Xbox controller (or one of its clones)
@@ -72,9 +72,16 @@ public abstract class ButtonListenerOpMode extends OpMode
 		return buttons;
 	}
 
+	public ButtonListenerTeleop()
+	{
+		super();
+	}
+
 	@Override
 	public void loop()
 	{
+		super.loop();
+
 		EnumSet<Button> newButtons = readButtons();
 		
 		if(prevButtons != null)
@@ -94,6 +101,16 @@ public abstract class ButtonListenerOpMode extends OpMode
 		}
 		
 		prevButtons = newButtons;
+	}
+
+	/**
+	 * Add one or more sequence elements to the queue.  They will be run in the order specified, but simultaneously with
+	 * the regular teleop code in loop().
+	 * @param steps
+	 */
+	protected void executeSequenceSteps(Object... steps)
+	{
+		MultiStep.addActualSteps(stepsList, steps);
 	}
 
 	/**

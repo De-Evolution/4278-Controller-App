@@ -29,9 +29,9 @@ CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
 OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE. */
 
-package com.qualcomm.ftcrobotcontroller.opmodes;
+package com.team4278.robots.honken;
 
-import com.qualcomm.ftcrobotcontroller.robots.RobotHonken;
+import com.team4278.robots.honken.RobotHonken;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 
 /**

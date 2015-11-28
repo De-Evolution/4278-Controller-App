@@ -1,8 +1,8 @@
-package com.qualcomm.ftcrobotcontroller.utils;
+package com.team4278.utils;
 
 import com.qualcomm.ftccommon.FtcEventLoop;
 import com.qualcomm.ftcrobotcontroller.FtcRobotControllerActivity;
-import com.qualcomm.ftcrobotcontroller.motion.MotorGroup;
+import com.team4278.motion.MotorGroup;
 import com.qualcomm.robotcore.eventloop.opmode.OpModeManager;
 import com.qualcomm.robotcore.exception.RobotCoreException;
 
