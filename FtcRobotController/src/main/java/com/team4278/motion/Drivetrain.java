@@ -2,6 +2,7 @@ package com.team4278.motion;
 
 import android.util.Log;
 
+import com.team4278.TimedSequenceStep;
 import com.team4278.utils.RoboLog;
 import com.team4278.utils.RobotMath;
 import com.team4278.utils.Stopper;
@@ -14,9 +15,6 @@ import com.qualcomm.robotcore.robocol.Telemetry;
 import java.util.Map;
 import java.util.regex.Pattern;
 
-/**
- * NOTE: ALL CONTROLLED MOVEMENT FUNCTIONS IN THIS CLASS MUST BE RUN FROM A LinearOpMode!
- */
 public class Drivetrain
 {
 
@@ -91,16 +89,9 @@ public class Drivetrain
 
 		MotorGroup leftMotorGroup;
 		MotorGroup rightMotorGroup;
-		if(useLegacy)
-		{
-			leftMotorGroup = new MotorGroupLegacy(useEncoders, (LinearOpMode)opMode);
-			rightMotorGroup = new MotorGroupLegacy(useEncoders, (LinearOpMode)opMode);
-		}
-		else
-		{
-			leftMotorGroup  = new MotorGroup(useEncoders);
-			rightMotorGroup  = new MotorGroup(useEncoders);
-		}
+
+		leftMotorGroup = new MotorGroup(useEncoders);
+		rightMotorGroup = new MotorGroup(useEncoders);
 
 		for(Map.Entry<String, DcMotor> motorEntry : opMode.hardwareMap.dcMotor.entrySet())
 		{
@@ -117,7 +108,7 @@ public class Drivetrain
 			}
 		}
 
-		leftMotorGroup.setInverted(true);
+		leftMotorGroup.setReversed(true);
 
 		return new Drivetrain(wheelbase, wheelCircumference, encoderCountsPerRev, leftMotorGroup, rightMotorGroup, opMode);
 	}
@@ -149,45 +140,6 @@ public class Drivetrain
 
 		this.encoderCountsPerRev = encoderCountsPerRev;
 	}
-
-	/**
-	 * Wait for the next hardware cycle.
-	 * @return false if the wait was interrupted (because the driver pressed stop)
-	 */
-	boolean pauseForReading()
-	{
-		try
-		{
-			linearOpMode.waitForNextHardwareCycle();
-			return true;
-		}
-		catch (InterruptedException e)
-		{
-			RoboLog.unusual("Autonomous Move Interrupted!");
-			return false;
-		}
-
-	}
-
-	/**
-	 * Wait for the next hardware cycle.
-	 * @return false if the wait was interrupted (because the driver pressed stop)
-	 */
-	boolean pauseForWriting()
-	{
-		try
-		{
-			linearOpMode.waitOneFullHardwareCycle();
-			return true;
-		}
-		catch (InterruptedException e)
-		{
-			RoboLog.unusual("Autonomous Move Interrupted!");
-			return false;
-		}
-
-	}
-
 
 	/**
 	 * Get the number of encoder ticks for the provided distance of linear movement.
@@ -245,39 +197,46 @@ public class Drivetrain
 	 * @param cm How far to move
 	 * @param msec  Timeout after which the robot will shut down (because it got stuck or otherwise failed). Set to 0 to disable.
 	 */
-	public void moveForward(double cm, int msec)
+
+	public class MoveForwardStep extends TimedSequenceStep
 	{
-		clearEncoders();
-		int enc = Math.abs(getEncoderByCm(cm));
-		double norm = RobotMath.sgn(cm);
-		
-		long startTime = System.currentTimeMillis();
-		
-		leftMotors.setTargetPosition(enc, MOTOR_POWER_FOR_AUTO_MOVES);
-		rightMotors.setTargetPosition(enc, MOTOR_POWER_FOR_AUTO_MOVES);
 
-		int leftPos, rightPos = 0;
-		
-		while(!isCloseEnough(leftPos = leftMotors.getCurrentPosition(), enc) && !isCloseEnough(rightPos = rightMotors.getCurrentPosition(), enc))
+		public MoveForward(double cm, int msec)
 		{
-			Log.d("moveForward()", String.format("left: %d%%, right: %d%%", leftPos * 100 / enc, rightPos * 100 / enc));
-			if (System.currentTimeMillis() - startTime > msec)
+			super()
+
+			clearEncoders();
+			int enc = Math.abs(getEncoderByCm(cm));
+			double norm = RobotMath.sgn(cm);
+
+			long startTime = System.currentTimeMillis();
+
+			leftMotors.setTargetPosition(enc, MOTOR_POWER_FOR_AUTO_MOVES);
+			rightMotors.setTargetPosition(enc, MOTOR_POWER_FOR_AUTO_MOVES);
+
+			int leftPos, rightPos = 0;
+
+			while(!isCloseEnough(leftPos = leftMotors.getCurrentPosition(), enc) && !isCloseEnough(rightPos = rightMotors.getCurrentPosition(), enc))
 			{
-				lockdownRobot();
-				return;
+				Log.d("moveForward()", String.format("left: %d%%, right: %d%%", leftPos * 100 / enc, rightPos * 100 / enc));
+				if(System.currentTimeMillis() - startTime > msec)
+				{
+					lockdownRobot();
+					return;
+				}
+
+				if(!pauseForReading())
+				{
+					break;
+				}
 			}
 
-			if(!pauseForReading())
-			{
-				break;
-			}
-	}
+			telemetry.addData("moveForward()", "Done!");
 
-		telemetry.addData("moveForward()", "Done!");
-		
-		stopMotors();
-		
-		pauseForWriting();
+			stopMotors();
+
+			pauseForWriting();
+		}
 	}
 
 	//arc to the right (set LEFT motors) a given amount of degrees

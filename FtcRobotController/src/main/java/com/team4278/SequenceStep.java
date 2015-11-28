@@ -1,6 +1,7 @@
 package com.team4278;
 
 import com.qualcomm.robotcore.robocol.Telemetry;
+import com.team4278.utils.RoboLog;
 
 /**
  * Class representing a step in a sequence.
@@ -10,14 +11,10 @@ import com.qualcomm.robotcore.robocol.Telemetry;
  */
 public abstract class SequenceStep
 {
-	protected Telemetry telemetry;
-
 	protected String className;
 
-	public SequenceStep(Telemetry telemetry)
+	public SequenceStep()
 	{
-		this.telemetry = telemetry;
-
 		className = getClass().getSimpleName();
 	}
 
@@ -30,7 +27,10 @@ public abstract class SequenceStep
 	 */
 	private void telemetryMessage(String message)
 	{
-		telemetry.addData(className, message);
+		if(RoboLog.telemetryToUse != null)
+		{
+			RoboLog.telemetryToUse.addData(className, message);
+		}
 	}
 
 	/**

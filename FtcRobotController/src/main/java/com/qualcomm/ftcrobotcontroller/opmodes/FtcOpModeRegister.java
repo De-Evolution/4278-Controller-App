@@ -33,6 +33,7 @@ package com.qualcomm.ftcrobotcontroller.opmodes;
 
 import com.qualcomm.robotcore.eventloop.opmode.OpModeManager;
 import com.qualcomm.robotcore.eventloop.opmode.OpModeRegister;
+import com.team4278.robots.honken.LinearAutoTest;
 
 /**
  * Register Op Modes
@@ -61,9 +62,9 @@ public class FtcOpModeRegister implements OpModeRegister {
      */
     manager.register("NullOp", NullOp.class);
 
-	  manager.register("AutoTest", LinearAutoTest.class);
+    manager.register("AutoTest", LinearAutoTest.class);
 
-	  manager.register("HonkenTeleOp", HonkenTeleOp.class);
+    manager.register("HonkenTeleOp", HonkenTeleOp.class);
 
 
   }
