@@ -28,7 +28,7 @@ public abstract class SequenceStep
 	 * Useful for showing progress information, etc.
 	 * @param message
 	 */
-	private void telemetryMessage(String message)
+	protected void telemetryMessage(String message)
 	{
 		telemetry.addData(className, message);
 	}

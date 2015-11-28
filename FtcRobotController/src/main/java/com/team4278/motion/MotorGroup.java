@@ -2,12 +2,11 @@ package com.team4278.motion;
 
 import android.util.Pair;
 
-import com.team4278.utils.RoboLog;
-import com.team4278.utils.RobotMath;
+import com.qualcomm.hardware.HiTechnicNxtDcMotorController;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorController;
+import com.team4278.utils.RobotMath;
 
-import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -18,7 +17,9 @@ import java.util.Set;
  */
 public class MotorGroup
 {
+	//set of motors and their respective encoder ignore distances
 	protected Set<Pair<DcMotor, Integer>> motors;
+	protected Set<HiTechnicNxtDcMotorController> legacyControllers;
 
 	private DcMotor preferredEncoderMotor;
 
@@ -34,7 +35,7 @@ public class MotorGroup
 
 	boolean hasEncoder;
 
-	//stored position of the encoder so that it can be pseudo-reset.
+
 
 	/**
 	 *
@@ -97,6 +98,8 @@ public class MotorGroup
 			}
 		}
 
+		legacyControllers = new HashSet<HiTechnicNxtDcMotorController>();
+
 	}
 
 	public void addMotor(DcMotor motor)
@@ -105,6 +108,11 @@ public class MotorGroup
 		motor.setPower(0);
 		motor.setMode(currentMode);
 		motor.setDirection(direction);
+
+		if(motor.getController() instanceof HiTechnicNxtDcMotorController)
+		{
+			legacyControllers.add((HiTechnicNxtDcMotorController) motor.getController());
+		}
 	}
 
 	/**
@@ -217,13 +225,45 @@ public class MotorGroup
 	 * Pseudo-resets the encoder distance of each motor using an internal counter.  Unlike the the other
 	 * reset function, this completes immediately.
 	 */
-	public void softResetEncoder()
+	public void softResetEncoders()
 	{
 		for(Pair<DcMotor, Integer> motorPair : motors)
 		{
 			motors.remove(motorPair);
 
 			motors.add(new Pair<DcMotor, Integer>(motorPair.first, motorPair.first.getCurrentPosition()));
+		}
+	}
+
+	/**
+	 * Sets all legacy motor controllers to read mode.
+	 *
+	 * This means that the encoders can be read and you can safely call getCurrentPosition()
+	 *
+	 * NOTE: This method affects CONTROLLERS, not motors.  If the two motors from one controller are split across different MotorGroups, then BOTH motors
+	 * will be affected by this call and the other group might act strange.
+	 */
+	public void setReadMode()
+	{
+		for(HiTechnicNxtDcMotorController controller : legacyControllers)
+		{
+			controller.setMotorControllerDeviceMode(DcMotorController.DeviceMode.READ_ONLY);
+		}
+	}
+
+	/**
+	 * Sets all legacy motor controllers to write mode.
+	 *
+	 * This means that data can be written and you can safely call setPower() and setTargetPosition()
+	 *
+	 * NOTE: This method affects CONTROLLERS, not motors.  If the two motors from one controller are split across different MotorGroups, then BOTH motors
+	 * will be affected by this call and the other group might act strange.
+	 */
+	public void setWriteMode()
+	{
+		for(HiTechnicNxtDcMotorController controller : legacyControllers)
+		{
+			controller.setMotorControllerDeviceMode(DcMotorController.DeviceMode.WRITE_ONLY);
 		}
 	}
 }

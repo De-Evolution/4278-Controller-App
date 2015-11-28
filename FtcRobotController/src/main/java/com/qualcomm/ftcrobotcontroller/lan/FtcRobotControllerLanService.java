@@ -118,7 +118,7 @@ public class FtcRobotControllerLanService extends FtcRobotControllerService
 	}
 
 	public synchronized void shutdownRobot() {
-		super.shutdownRobot();
+		super.shutdownRobot(); //TODO: According to the debugger socket seems to be being shut down twice, at least. Investigate this.
 		if(this.initThread != null && this.initThread.isAlive()) {
 			this.initThread.interrupt();
 			try
@@ -190,9 +190,8 @@ public class FtcRobotControllerLanService extends FtcRobotControllerService
 				try
 				{
 					//we can't use Robot.start() because we need to bind the socket to localhost
-					
+
 					robot.socket.bind(new InetSocketAddress(20884));
-					robot.eventLoopManager.start(FtcRobotControllerLanService.this.loop);
 				}
 				catch (SocketException var4)
 				{
@@ -200,12 +199,17 @@ public class FtcRobotControllerLanService extends FtcRobotControllerService
 					throw new RobotCoreException("Robot start failed: " + var4.toString());
 				}
 
+				robot.eventLoopManager.start(FtcRobotControllerLanService.this.loop);
+
 				robotField.set(FtcRobotControllerLanService.this, robot);
 			}
 			catch (RobotCoreException var2)
 			{
 				setStatus("Robot Status: failed to start robot");
 				RobotLog.setGlobalErrorMsg(var2.getMessage());
+
+				robot.socket.close(); //remember to close the socket on failure!  Not having this line caused a very annoying issue where the robot start would fail with an address in use error
+															//if it had failed to start previously until the app was restarted.
 			}
 			catch (IllegalAccessException e)
 			{

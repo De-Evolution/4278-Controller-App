@@ -34,8 +34,4 @@ public class RobotGoatEFoster
 
 		homingHallEffect = opMode.hardwareMap.digitalChannel.get("armEndstop");
 	}
-
-
-
-
 }

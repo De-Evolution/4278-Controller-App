@@ -465,7 +465,8 @@ public class FtcRobotControllerActivity extends Activity {
   }
 
   private void requestRobotRestart() {
-    requestRobotShutdown();
+	  DbgLog.msg("Restarting robot...");
+	  requestRobotShutdown();
     requestRobotSetup();
   }
 

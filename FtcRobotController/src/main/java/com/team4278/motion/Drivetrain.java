@@ -2,14 +2,13 @@ package com.team4278.motion;
 
 import android.util.Log;
 
-import com.team4278.utils.RoboLog;
-import com.team4278.utils.RobotMath;
-import com.team4278.utils.Stopper;
-import com.qualcomm.hardware.HiTechnicNxtDcMotorController;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.robocol.Telemetry;
+import com.team4278.utils.RoboLog;
+import com.team4278.utils.RobotMath;
+import com.team4278.utils.Stopper;
 
 import java.util.Map;
 import java.util.regex.Pattern;
@@ -75,32 +74,11 @@ public class Drivetrain
 	public static Drivetrain make(boolean useEncoders, double wheelbase, double wheelCircumference, double encoderCountsPerRev, OpMode opMode)
 	{
 
-		boolean useLegacy = false;
-
-		if(opMode instanceof LinearOpMode)
-		{
-			//check for legacy motor controllers
-			for(Map.Entry<String, DcMotor> motorEntry : opMode.hardwareMap.dcMotor.entrySet())
-			{
-				if(motorEntry.getValue().getController() instanceof HiTechnicNxtDcMotorController)
-				{
-					useLegacy = true;
-				}
-			}
-		}
-
 		MotorGroup leftMotorGroup;
 		MotorGroup rightMotorGroup;
-		if(useLegacy)
-		{
-			leftMotorGroup = new MotorGroupLegacy(useEncoders, (LinearOpMode)opMode);
-			rightMotorGroup = new MotorGroupLegacy(useEncoders, (LinearOpMode)opMode);
-		}
-		else
-		{
-			leftMotorGroup  = new MotorGroup(useEncoders);
-			rightMotorGroup  = new MotorGroup(useEncoders);
-		}
+		leftMotorGroup  = new MotorGroup(useEncoders);
+		rightMotorGroup  = new MotorGroup(useEncoders);
+
 
 		for(Map.Entry<String, DcMotor> motorEntry : opMode.hardwareMap.dcMotor.entrySet())
 		{
@@ -117,7 +95,7 @@ public class Drivetrain
 			}
 		}
 
-		leftMotorGroup.setInverted(true);
+		leftMotorGroup.setReversed(true);
 
 		return new Drivetrain(wheelbase, wheelCircumference, encoderCountsPerRev, leftMotorGroup, rightMotorGroup, opMode);
 	}
