@@ -1,15 +1,17 @@
 package com.qualcomm.ftcrobotcontroller.robots.goatefoster;
 
+import com.qualcomm.robotcore.robocol.Telemetry;
 import com.team4278.SequenceStep;
 
 /**
  * Created by Jamie on 11/26/2015.
  */
-public class HomeArmStepOne implements SequenceStep
+public class HomeArmStepOne extends SequenceStep
 {
 	RobotGoatEFoster robot;
-	public HomeArmStepOne(RobotGoatEFoster robot)
+	public HomeArmStepOne(Telemetry telemetry, RobotGoatEFoster robot)
 	{
+		super(telemetry);
 		this.robot = robot;
 
 	}
@@ -17,24 +19,19 @@ public class HomeArmStepOne implements SequenceStep
 	@Override
 	public void init()
 	{
-		
+		robot.armMotors.setPower(-.5);
 	}
 
 	@Override
-	public void loop()
+	public boolean loop()
 	{
-
+		return robot.homingHallEffect.getState(); //active low
 	}
 
-	@Override
-	public boolean isFinished()
-	{
-		return false;
-	}
 
 	@Override
 	public void end()
 	{
-
+		robot.armMotors.stopMotors();
 	}
 }

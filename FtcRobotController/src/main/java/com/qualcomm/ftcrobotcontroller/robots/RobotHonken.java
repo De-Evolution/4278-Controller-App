@@ -31,11 +31,7 @@ public class RobotHonken
 		drivetrain = Drivetrain.make(true, 25, 7.3 * Units.CM * Math.PI, 1440, opMode);
 
 		leftHook = opMode.hardwareMap.servo.get("leftHook"); //servo 3
-		rightHook = opMode.hardwareMap.servo.get("rightHook");
-
-		//only front motors have encoders
-		drivetrain.getLeftMotors().setEncoderMotor(opMode.hardwareMap.dcMotor.get("leftBackMotor"));
-		drivetrain.getRightMotors().setEncoderMotor(opMode.hardwareMap.dcMotor.get("rightBackMotor"));
+		rightHook = opMode.hardwareMap.servo.get("rightHook"); 
 
 		opMode.hardwareMap.dcMotor.get("leftFrontMotor").setChannelMode(DcMotorController.RunMode.RUN_WITHOUT_ENCODERS);
 		opMode.hardwareMap.dcMotor.get("rightFrontMotor").setChannelMode(DcMotorController.RunMode.RUN_WITHOUT_ENCODERS);
