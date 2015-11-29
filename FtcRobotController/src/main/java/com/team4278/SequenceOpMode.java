@@ -1,6 +1,7 @@
 package com.team4278;
 
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
+import com.team4278.utils.RoboLog;
 
 import java.util.HashSet;
 import java.util.Iterator;
@@ -46,9 +47,11 @@ public abstract class SequenceOpMode extends OpMode
 		{
 			SequenceStep nextStep = steps.get(0);
 
-			if(!nextStep.getStepsBefore().isEmpty())
+			if(!nextStep.stepsBeforeAdded && !nextStep.getStepsBefore().isEmpty())
 			{
 				steps.addAll(0, nextStep.getStepsBefore());
+
+				nextStep.stepsBeforeAdded = true;
 
 				expandFirstStep();
 			}
@@ -71,6 +74,9 @@ public abstract class SequenceOpMode extends OpMode
 	@Override
 	public void init()
 	{
+		//set global telemetry variable
+		RoboLog.telemetryToUse = telemetry;
+
 		LinkedList<SequenceStep> stepsToExecute = new LinkedList<SequenceStep>();
 
 		addSteps(stepsToExecute);
@@ -98,11 +104,12 @@ public abstract class SequenceOpMode extends OpMode
 				case POSTINIT:
 					thread.currentStep.second_init();
 					thread.state = State.RUNNING;
+					break;
 				case RUNNING:
 					boolean overtime = thread.currentStep.isTimed() &&
 							System.currentTimeMillis() - thread.currentStepStartTime < thread.currentStep.getTimeLimit();
 
-					if(!overtime || !thread.currentStep.loop())
+					if(overtime || !thread.currentStep.loop())
 					{
 						thread.currentStep.wasTimeKilled = overtime;
 						thread.state = State.ENDING;
@@ -152,7 +159,7 @@ public abstract class SequenceOpMode extends OpMode
 		thread.state = State.INITIALIZING;
 	}
 
-	private void spawnThread(LinkedList<SequenceStep> stepsList)
+	protected void spawnThread(LinkedList<SequenceStep> stepsList)
 	{
 		SequenceThread newThread = new SequenceThread(stepsList);
 		advanceToNextStep(newThread);

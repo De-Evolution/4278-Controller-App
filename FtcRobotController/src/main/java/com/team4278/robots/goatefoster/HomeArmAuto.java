@@ -1,14 +1,21 @@
 package com.team4278.robots.goatefoster;
 
+import com.qualcomm.robotcore.robot.Robot;
 import com.team4278.SequenceOpMode;
+import com.team4278.SequenceStep;
+
+import java.util.LinkedList;
 
 /**
- * Created by Jamie on 11/27/2015.
+ * Autonomous program to home the arm nto its rest position
  */
 public class HomeArmAuto extends SequenceOpMode
 {
-	public HomeArmAuto()
+
+	@Override
+	public void addSteps(LinkedList<SequenceStep> steps)
 	{
-		super(ArmHomeSequence.buildSequence();
+		RobotGoatEFoster robot = new RobotGoatEFoster(this);
+		steps.add(new ArmHomeStep(robot));
 	}
 }

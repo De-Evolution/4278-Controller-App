@@ -34,6 +34,7 @@ package com.qualcomm.ftcrobotcontroller.opmodes;
 import com.qualcomm.robotcore.eventloop.opmode.OpModeManager;
 import com.qualcomm.robotcore.eventloop.opmode.OpModeRegister;
 import com.team4278.robots.goatefoster.HomeArmAuto;
+import com.team4278.test.PrereqTestOpMode;
 
 /**
  * Register Op Modes
@@ -64,10 +65,9 @@ public class FtcOpModeRegister implements OpModeRegister {
 
     manager.register("Home Arm", HomeArmAuto.class);
 //
-//	  manager.register("AutoTest", LinearAutoTest.class);
-//
 //	  manager.register("HonkenTeleOp", HonkenTeleOp.class);
 
+    manager.register("Prereq Test", new PrereqTestOpMode());
 
   }
 }

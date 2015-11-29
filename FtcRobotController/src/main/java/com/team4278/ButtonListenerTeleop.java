@@ -1,6 +1,8 @@
 package com.team4278;
 
+import java.util.Collections;
 import java.util.EnumSet;
+import java.util.LinkedList;
 
 /**
  * OpMode superclass which polls the controller buttons and allows the opmode to handle when they are pressed and released.
@@ -108,9 +110,11 @@ public abstract class ButtonListenerTeleop extends SequenceOpMode
 	 * the regular teleop code in loop().
 	 * @param steps
 	 */
-	protected void executeSequenceSteps(Object... steps)
+	protected void executeSequenceSteps(SequenceStep... steps)
 	{
-		MultiStep.addActualSteps(stepsList, steps);
+		LinkedList<SequenceStep> stepsList = new LinkedList<SequenceStep>();
+		Collections.addAll(stepsList, steps);
+		super.spawnThread(stepsList);
 	}
 
 	/**

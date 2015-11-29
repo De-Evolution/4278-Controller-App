@@ -24,8 +24,6 @@ public class RobotGoatEFoster
 
 	public RobotGoatEFoster(OpMode opMode)
 	{
-		RoboLog.telemetryToUse = opMode.telemetry;
-
 		drivetrain = Drivetrain.make(true, 25, 9.9 * Units.CM * Math.PI, 1120, opMode);
 
 		armBrake = opMode.hardwareMap.servo.get("armBrakeServo");

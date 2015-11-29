@@ -21,6 +21,9 @@ public abstract class SequenceStep
 
 	boolean wasTimeKilled;
 
+	//flag used during execution to tell if the step's prerequisites have already been added to the queue
+	boolean stepsBeforeAdded;
+
 	//these three lists are lazily evaluated to determine which steps will be executed next
 	private LinkedList<SequenceStep> stepsBefore, stepsAfter, stepsParallel;
 
@@ -31,6 +34,8 @@ public abstract class SequenceStep
 		stepsBefore = new LinkedList<SequenceStep>();
 		stepsParallel = new LinkedList<SequenceStep>();
 		stepsAfter = new LinkedList<SequenceStep>();
+
+		stepsBeforeAdded = false;
 	}
 
 	/**
