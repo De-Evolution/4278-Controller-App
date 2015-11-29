@@ -57,7 +57,7 @@ public class RoboLog
 		Log.i("Robot-Info", message);
 		if(telemetryToUse != null)
 		{
-			telemetryToUse.addData("\2709", message);
+			telemetryToUse.addData("\u2709", message);
 		}
 	}
 	
@@ -71,7 +71,7 @@ public class RoboLog
 	}
 
 	/**
-	 * Log an event which shouldn't happen in normal operation, but soehow has.
+	 * Log an event which shouldn't happen in normal operation, but somehow has.
 	 * @param message
 	 */
 	public static void unexpected( String message)
