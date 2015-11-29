@@ -3,6 +3,8 @@ package com.team4278;
 import com.qualcomm.robotcore.robocol.Telemetry;
 import com.team4278.utils.RoboLog;
 
+import java.util.LinkedList;
+
 /**
  * Class representing a step in a sequence.
  *
@@ -19,9 +21,16 @@ public abstract class SequenceStep
 
 	boolean wasTimeKilled;
 
+	//these three lists are lazily evaluated to determine which steps will be executed next
+	private LinkedList<SequenceStep> stepsBefore, stepsAfter, stepsParallel;
+
 	public SequenceStep()
 	{
 		className = getClass().getSimpleName();
+
+		stepsBefore = new LinkedList<SequenceStep>();
+		stepsParallel = new LinkedList<SequenceStep>();
+		stepsAfter = new LinkedList<SequenceStep>();
 	}
 
 	/**
@@ -79,11 +88,57 @@ public abstract class SequenceStep
 		return isTimed;
 	}
 
+	public LinkedList<SequenceStep> getStepsBefore()
+	{
+		return stepsBefore;
+	}
+
+	public LinkedList<SequenceStep> getStepsAfter()
+	{
+		return stepsAfter;
+	}
+
+	public LinkedList<SequenceStep> getStepsParallel()
+	{
+		return stepsParallel;
+	}
+
+	/**
+	 * Add a step which will be executed before this one.
+	 * @param stepToAdd
+	 */
+	public void addStepBefore(SequenceStep stepToAdd)
+	{
+		stepsBefore.add(stepToAdd);
+	}
+
+	/**
+	 * Add a step which will be executed directly after this one.
+	 * @param stepToAdd
+	 */
+	public void addStepAfter(SequenceStep stepToAdd)
+	{
+		stepsAfter.add(stepToAdd);
+	}
+
+	/**
+	 * Add a step which will be executed at the same time as this one.
+	 * @param stepToAdd
+	 */
+	public void addStepParallel(SequenceStep stepToAdd)
+	{
+		stepsParallel.add(stepToAdd);
+	}
 
 	/**
 	 * Called once when the step is started.
 	 */
 	public abstract void init();
+
+	/**
+	 * Because sometimes, you just need two hardware cycles to init properly.
+	 */
+	public void second_init() {};
 
 	/**
 	 * Called repeatedly while the step is running.

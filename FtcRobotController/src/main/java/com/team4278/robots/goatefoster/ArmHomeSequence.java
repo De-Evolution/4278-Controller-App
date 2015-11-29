@@ -1,7 +1,6 @@
 package com.team4278.robots.goatefoster;
 
 import com.qualcomm.robotcore.robocol.Telemetry;
-import com.team4278.MultiStep;
 import com.team4278.SequenceStep;
 import com.team4278.genericsteps.HardResetEncodersStep;
 

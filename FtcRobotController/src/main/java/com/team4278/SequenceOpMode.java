@@ -2,6 +2,8 @@ package com.team4278;
 
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 
+import java.util.HashSet;
+import java.util.Iterator;
 import java.util.LinkedList;
 
 /**
@@ -13,84 +15,159 @@ public abstract class SequenceOpMode extends OpMode
 	enum State
 	{
 		INITIALIZING,
+		POSTINIT,
 		RUNNING,
+		ENDING,
 		DONE
 	}
 
-	protected LinkedList<SequenceStep> stepsList;
+	class SequenceThread
+	{
+		SequenceStep currentStep;
 
-	protected SequenceStep currentStep;
+		LinkedList<SequenceStep> steps;
 
-	protected State currentState;
+		long currentStepStartTime;
 
-	protected long currentStepStartTime;
+		State state;
+
+		public SequenceThread(LinkedList<SequenceStep> steps)
+		{
+			this.steps = steps;
+
+			state = State.INITIALIZING;
+		}
+
+
+		/**
+		 * Recursively expands prerequisites of the first step in the list, leaving the correct next step at position 0.
+		 */
+		private void expandFirstStep()
+		{
+			SequenceStep nextStep = steps.get(0);
+
+			if(!nextStep.getStepsBefore().isEmpty())
+			{
+				steps.addAll(0, nextStep.getStepsBefore());
+
+				expandFirstStep();
+			}
+		}
+	}
+
+	protected HashSet<SequenceThread> threads;
+
+	public SequenceOpMode()
+	{
+		super();
+		threads = new HashSet<SequenceThread>();
+	}
 
 	/**
-	 *
-	 * @param steps the list of SequenceSteps, and MultiSteps, to execute
+	 * Allows opmodes to add their steps to the sequence
 	 */
 	public abstract void addSteps(LinkedList<SequenceStep> steps);
 
 	@Override
 	public void init()
 	{
-		stepsList = new LinkedList<SequenceStep>();
+		LinkedList<SequenceStep> stepsToExecute = new LinkedList<SequenceStep>();
 
-		MultiStep.addActualSteps(stepsList, steps);
+		addSteps(stepsToExecute);
 
-		//don't start if we have no commands
-		if(stepsList.isEmpty()) //this is normal if we are used by ButtonListenerTeleop, so it's not an error case
+		if(!stepsToExecute.isEmpty())
 		{
-			currentState = State.DONE;
-		}
-		else
-		{
-			currentState = State.INITIALIZING;
+			spawnThread(stepsToExecute);
 		}
 	}
 
 	@Override
 	public void loop()
 	{
-		switch(currentState)
+		SequenceThread thread;
+		for(Iterator<SequenceThread> threadIter = threads.iterator(); threadIter.hasNext();)
 		{
-			case INITIALIZING:
-				currentStep = stepsList.pop();
-				currentStep.init();
-				currentState = State.RUNNING;
-				currentStepStartTime = System.currentTimeMillis();
-				break;
+			thread = threadIter.next();
+			switch(thread.state)
+			{
+				case INITIALIZING:
+					thread.currentStep.init();
+					thread.state = State.POSTINIT;
+					thread.currentStepStartTime = System.currentTimeMillis();
+					break;
+				case POSTINIT:
+					thread.currentStep.second_init();
+					thread.state = State.RUNNING;
+				case RUNNING:
+					boolean overtime = thread.currentStep.isTimed() &&
+							System.currentTimeMillis() - thread.currentStepStartTime < thread.currentStep.getTimeLimit();
 
-			case RUNNING:
-				boolean overtime = currentStep.isTimed() && System.currentTimeMillis() - currentStepStartTime < currentStep.getTimeLimit();
-
-				if(!overtime || !currentStep.loop())
-				{
-					currentStep.wasTimeKilled = overtime;
-
-					currentStep.end();
-
-					if(stepsList.isEmpty())
+					if(!overtime || !thread.currentStep.loop())
 					{
-						currentState = State.DONE;
+						thread.currentStep.wasTimeKilled = overtime;
+						thread.state = State.ENDING;
+					}
+					break;
+				case ENDING:
+					thread.currentStep.end();
+
+					if(thread.steps.isEmpty())
+					{
+						threadIter.remove();
 					}
 					else
 					{
-						currentState = State.INITIALIZING;
+						advanceToNextStep(thread);
 					}
-				}
+					break;
+			}
 		}
 	}
+
+	/**
+	 * Moves the provided thread to the next command, and spawns additional threads as needed.
+	 *
+	 * Cannot handle threads with empty command lists.
+	 */
+	private void advanceToNextStep(SequenceThread thread)
+	{
+		thread.expandFirstStep();
+
+		//remove the next step from the front of the queue
+		SequenceStep newStep = thread.steps.pop();
+
+		//Add all of its post-requisites
+		thread.steps.addAll(0, newStep.getStepsAfter());
+
+		//spawn the other threads it specifies
+		for(SequenceStep step : newStep.getStepsParallel())
+		{
+			LinkedList<SequenceStep> threadSteps = new LinkedList<SequenceStep>();
+			threadSteps.add(step);
+			spawnThread(threadSteps);
+		}
+
+		//finally, actually advance to the next step
+		thread.currentStep = newStep;
+		thread.state = State.INITIALIZING;
+	}
+
+	private void spawnThread(LinkedList<SequenceStep> stepsList)
+	{
+		SequenceThread newThread = new SequenceThread(stepsList);
+		advanceToNextStep(newThread);
+		threads.add(newThread);
+	}
+
 
 	@Override
 	public void stop()
 	{
 		super.stop();
 
-		//if we were aborted in the middle of a step, halt it prematurely
-		if(currentState == State.RUNNING)
+		for(SequenceThread thread : threads)
 		{
-			currentStep.end();
+			thread.currentStep.end();
 		}
 	}
 }
