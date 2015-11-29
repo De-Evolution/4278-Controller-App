@@ -13,8 +13,26 @@ public abstract class SequenceStep
 {
 	protected String className;
 
+	private long timeLimit;
+
+	private boolean isTimed;
+
+	boolean wasTimeKilled;
+
 	public SequenceStep()
 	{
+		className = getClass().getSimpleName();
+	}
+
+	/**
+	 * Construct the step with a time limit after which it will be killed.
+	 *
+	 * You can call wasTimeKilled() in end() to determine if the command was stopped because it hit the time limit.
+	 * @param timeLimit THe time limit in milliseconds.
+	 */
+	public SequenceStep(long timeLimit)
+	{
+		this.timeLimit = timeLimit;
 		className = getClass().getSimpleName();
 	}
 
@@ -32,6 +50,35 @@ public abstract class SequenceStep
 			RoboLog.telemetryToUse.addData(className, message);
 		}
 	}
+
+	protected boolean wasTimeKilled()
+	{
+		return wasTimeKilled;
+	}
+
+	/**
+	 * Gets the time limit of the command in milliseconds.
+	 *
+	 * If it is not timed, returns -1
+	 * @return
+	 */
+	public long getTimeLimit()
+	{
+		if(isTimed)
+		{
+			return -1;
+		}
+		else
+		{
+			return timeLimit;
+		}
+	}
+
+	public boolean isTimed()
+	{
+		return isTimed;
+	}
+
 
 	/**
 	 * Called once when the step is started.

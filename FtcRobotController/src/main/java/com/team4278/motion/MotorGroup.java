@@ -148,7 +148,7 @@ public class MotorGroup
 	/**
 	 * Sets all motors in the group to be stopped and locked.
 	 */
-	public void stopMotors()
+	public void stop()
 	{
 		setPower(0);
 	}

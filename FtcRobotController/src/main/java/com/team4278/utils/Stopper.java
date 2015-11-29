@@ -28,7 +28,7 @@ public class Stopper
 				{
 					if(group != null)
 					{
-						group.stopMotors();
+						group.stop();
 					}
 				}
 			}
@@ -55,7 +55,7 @@ public class Stopper
 			{
 				if(group != null)
 				{
-					group.stopMotors();
+					group.stop();
 				}
 			}
 		}

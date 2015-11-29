@@ -7,7 +7,7 @@ import java.util.LinkedList;
 /**
  * Autonomous program which runs SequenceSteps
  */
-public class SequenceOpMode extends OpMode
+public abstract class SequenceOpMode extends OpMode
 {
 
 	enum State
@@ -23,11 +23,16 @@ public class SequenceOpMode extends OpMode
 
 	protected State currentState;
 
+	protected long currentStepStartTime;
+
 	/**
 	 *
 	 * @param steps the list of SequenceSteps, and MultiSteps, to execute
 	 */
-	public SequenceOpMode(Object... steps)
+	public abstract void addSteps(LinkedList<SequenceStep> steps);
+
+	@Override
+	public void init()
 	{
 		stepsList = new LinkedList<SequenceStep>();
 
@@ -45,12 +50,6 @@ public class SequenceOpMode extends OpMode
 	}
 
 	@Override
-	public void init()
-	{
-		//do nothing
-	}
-
-	@Override
 	public void loop()
 	{
 		switch(currentState)
@@ -59,11 +58,16 @@ public class SequenceOpMode extends OpMode
 				currentStep = stepsList.pop();
 				currentStep.init();
 				currentState = State.RUNNING;
+				currentStepStartTime = System.currentTimeMillis();
 				break;
 
 			case RUNNING:
-				if(!currentStep.loop())
+				boolean overtime = currentStep.isTimed() && System.currentTimeMillis() - currentStepStartTime < currentStep.getTimeLimit();
+
+				if(!overtime || !currentStep.loop())
 				{
+					currentStep.wasTimeKilled = overtime;
+
 					currentStep.end();
 
 					if(stepsList.isEmpty())

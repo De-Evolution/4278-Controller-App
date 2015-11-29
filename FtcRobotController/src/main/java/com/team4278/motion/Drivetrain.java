@@ -6,8 +6,10 @@ import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.robocol.Telemetry;
+import com.team4278.SequenceStep;
 import com.team4278.utils.RoboLog;
 import com.team4278.utils.RobotMath;
+import com.team4278.utils.Side;
 import com.team4278.utils.Stopper;
 
 import java.util.Map;
@@ -145,8 +147,8 @@ public class Drivetrain
 	 */
 	public void clearEncoders()
 	{
-		leftMotors.startEncoderReset();
-		rightMotors.startEncoderReset();
+		leftMotors.softResetEncoders();
+		rightMotors.softResetEncoders();
 	}
 
 	/**
@@ -154,8 +156,8 @@ public class Drivetrain
 	 */
 	public void stopMotors()
 	{
-		leftMotors.stopMotors();
-		rightMotors.stopMotors();
+		leftMotors.stop();
+		rightMotors.stop();
 	}
 
 
@@ -163,6 +165,18 @@ public class Drivetrain
 
 		Stopper.lockdownRobot(leftMotors, rightMotors);
 
+	}
+
+	private MotorGroup getMotorsForSide(Side side)
+	{
+		if(side == Side.LEFT)
+		{
+			return leftMotors;
+		}
+		else
+		{
+			return rightMotors;
+		}
 	}
 
 	/**
@@ -176,149 +190,176 @@ public class Drivetrain
 		return Math.abs(current - desired)  < completionToleranceCounts;
 	}
 
-	/**
-	 * Move forward a distance.
-	 * @param cm How far to move
-	 * @param msec  Timeout after which the robot will shut down (because it got stuck or otherwise failed). Set to 0 to disable.
-	 */
-
-	public class MoveForwardStep extends TimedSequenceStep
+	public class MoveForwardStep extends SequenceStep
 	{
+		int targetEncCount;
 
-		public MoveForward(double cm, int msec)
+		int norm;
+
+		int leftPos, rightPos = 0;
+
+		/**
+		 * Move forward a distance.
+		 * @param cm How far to move
+		 * @param msec  Timeout after which the robot will shut down (because it got stuck or otherwise failed). Set to 0 to disable.
+		 */
+		public MoveForwardStep(double cm, int msec)
 		{
-			super()
+			super(msec);
+
 
 			clearEncoders();
-			int enc = Math.abs(getEncoderByCm(cm));
-			double norm = RobotMath.sgn(cm);
+			targetEncCount = Math.abs(getEncoderByCm(cm));
+			norm = (int) RobotMath.sgn(cm);
 
-			long startTime = System.currentTimeMillis();
+		}
 
-			leftMotors.setTargetPosition(enc, MOTOR_POWER_FOR_AUTO_MOVES);
-			rightMotors.setTargetPosition(enc, MOTOR_POWER_FOR_AUTO_MOVES);
+		@Override
+		public boolean loop()
+		{
+			leftPos = leftMotors.getCurrentPosition();
+			rightPos = rightMotors.getCurrentPosition();
+			Log.d("moveForward()", String.format("left: %d%%, right: %d%%", leftPos * 100 / targetEncCount, rightPos * 100 / targetEncCount));
 
-			int leftPos, rightPos = 0;
+			return !isCloseEnough(leftPos, targetEncCount) && !isCloseEnough(rightPos, targetEncCount);
+		}
 
-			while(!isCloseEnough(leftPos = leftMotors.getCurrentPosition(), enc) && !isCloseEnough(rightPos = rightMotors.getCurrentPosition(), enc))
+		@Override
+		public void init()
+		{
+			leftMotors.setTargetPosition(targetEncCount, MOTOR_POWER_FOR_AUTO_MOVES);
+			rightMotors.setTargetPosition(targetEncCount, MOTOR_POWER_FOR_AUTO_MOVES);
+		}
+
+		@Override
+		public void end()
+		{
+			if(wasTimeKilled())
 			{
-				Log.d("moveForward()", String.format("left: %d%%, right: %d%%", leftPos * 100 / enc, rightPos * 100 / enc));
-				if(System.currentTimeMillis() - startTime > msec)
-				{
-					lockdownRobot();
-					return;
-				}
-
-				if(!pauseForReading())
-				{
-					break;
-				}
+				lockdownRobot();
+				telemetryMessage("Emergency Killed!");
 			}
-
-			telemetry.addData("moveForward()", "Done!");
-
+			else
+			{
+				telemetryMessage("Done!");
+			}
 			stopMotors();
 
-			pauseForWriting();
-		}
-	}
-
-	//arc to the right (set LEFT motors) a given amount of degrees
-	public void arcRight(double degs) {
-		int enc = getEncoderByCm(2 * turningCircleCircumference * (Math.abs(degs) / 360.0));
-
-		leftMotors.startEncoderReset();
-		leftMotors.setTargetPosition(enc, MOTOR_POWER_FOR_AUTO_MOVES);
-
-		long startTime = System.currentTimeMillis();
-
-		while(leftMotors.getCurrentPosition() < enc)
-		{
-			if(System.currentTimeMillis() - startTime > MAX_TURN_TIME)
-				lockdownRobot();
-
-			if(!pauseForReading())
-			{
-				break;
-			}
 		}
 
-		leftMotors.stopMotors();
-		pauseForWriting();
-	}
-	
-	//arc to the left (set RIGHT motors) a given amount of degrees
-	public void arcLeft(double degs)
-	{
-		int enc = getEncoderByCm(2 * turningCircleCircumference * (Math.abs(degs) / 360.0));
-		
-		rightMotors.startEncoderReset();
-		rightMotors.setTargetPosition(enc, MOTOR_POWER_FOR_AUTO_MOVES);
-		
-		long startTime = System.currentTimeMillis();
-		
-		while(rightMotors.getCurrentPosition() < enc)
-		{
-			if(System.currentTimeMillis() - startTime > MAX_TURN_TIME)
-				lockdownRobot();
-
-			if(!pauseForReading())
-			{
-				break;
-			}
-		}
-		
-		rightMotors.stopMotors();
-		pauseForWriting();
 	}
 
 
 	/**
-	 * Perform an in-place turn to the right.
-	 *
-	 * Accepts negative values.
-	 * @param degs the number of degree to turn
+	 * Step for an arc turn.  Note that this requires omni wheels (the ones with the rollers) on the front or back of the robot to work properly.
 	 */
-	public void turnRight(double degs)
+	public class ArcTurnStep extends SequenceStep
 	{
-		turnLeft(-degs);
-	}
+		int targetEncCount;
 
-	/**
-	 * Perform an in-place turn to the left.
-	 *
-	 * Accepts negative values.
-	 *
-	 * @param degs the number of degrees to turn
-	 */
-	public void turnLeft(double degs)
-	{
-		//always positive
-		int enc = getEncoderByCm(turningCircleCircumference * (Math.abs(degs) / 360.0));
+		int motorPos = 0;
 
-		clearEncoders();
+		MotorGroup motorsToTurnWith;
 
-		leftMotors.setTargetPosition(RobotMath.floor_double_int(RobotMath.sgn(degs) * enc), MOTOR_POWER_FOR_AUTO_MOVES);
-		rightMotors.setTargetPosition(RobotMath.floor_double_int( -1 *RobotMath.sgn(degs) * enc), MOTOR_POWER_FOR_AUTO_MOVES);
-
-		long startTime = System.currentTimeMillis();
-
-		while(Math.abs(leftMotors.getCurrentPosition()) < enc && Math.abs(rightMotors.getCurrentPosition()) < enc)
+		public ArcTurnStep(Side directionToTurn, double degs, int msec)
 		{
-			if(System.currentTimeMillis() - startTime > MAX_TURN_TIME)
-			{
-				lockdownRobot();
-				return;
-			}
+			super(msec);
 
-			if(!pauseForReading())
-			{
-				break;
-			}
+			clearEncoders();
+			targetEncCount = getEncoderByCm(2 * turningCircleCircumference * (degs / 360.0));
+
+			motorsToTurnWith = getMotorsForSide(directionToTurn.getOpposite());
+
 		}
 
-		stopMotors();
-		pauseForWriting();
+		@Override
+		public boolean loop()
+		{
+			motorPos = motorsToTurnWith.getCurrentPosition();
+			telemetryMessage((motorPos * 100 / targetEncCount) + "%");
+
+			return !isCloseEnough(motorPos, targetEncCount);
+		}
+
+		@Override
+		public void init()
+		{
+			motorsToTurnWith.setTargetPosition(targetEncCount, MOTOR_POWER_FOR_AUTO_MOVES);
+		}
+
+		@Override
+		public void end()
+		{
+			if(wasTimeKilled())
+			{
+				lockdownRobot();
+				telemetryMessage("Emergency Killed!");
+			}
+			else
+			{
+				telemetryMessage("Done!");
+			}
+			motorsToTurnWith.stop();
+
+		}
+
+	}
+
+	public class InPlaceTurnStep extends SequenceStep
+	{
+		int targetEncCount;
+
+		int forwardPos, backwardsPos = 0;
+
+		MotorGroup backwardsMotors;  //the motors that move backwards.  When turning LEFT, these would be the LEFT motors.
+		MotorGroup forwardsMotors;
+
+		public InPlaceTurnStep(Side directionToTurn, double degs, int msec)
+		{
+			super(msec);
+
+			clearEncoders();
+			targetEncCount = getEncoderByCm(turningCircleCircumference * (degs / 360.0));
+
+			backwardsMotors = getMotorsForSide(directionToTurn);
+			forwardsMotors = getMotorsForSide(directionToTurn.getOpposite());
+
+		}
+
+		@Override
+		public boolean loop()
+		{
+			forwardPos = forwardsMotors.getCurrentPosition();
+			backwardsPos = backwardsMotors.getCurrentPosition();
+
+			telemetryMessage(String.format("fwd: %d%%, back: %d%%", forwardPos * 100 / targetEncCount, backwardsPos * 100 / targetEncCount));
+
+			return !isCloseEnough(forwardPos, targetEncCount) && !isCloseEnough(backwardsPos, -targetEncCount);
+		}
+
+		@Override
+		public void init()
+		{
+			forwardsMotors.setTargetPosition(targetEncCount, MOTOR_POWER_FOR_AUTO_MOVES);
+			backwardsMotors.setTargetPosition(-1 * targetEncCount, MOTOR_POWER_FOR_AUTO_MOVES);
+		}
+
+		@Override
+		public void end()
+		{
+			if(wasTimeKilled())
+			{
+				lockdownRobot();
+				telemetryMessage("Emergency Killed!");
+			}
+			else
+			{
+				telemetryMessage("Done!");
+			}
+			stopMotors();
+
+		}
+
 	}
 
 	/**

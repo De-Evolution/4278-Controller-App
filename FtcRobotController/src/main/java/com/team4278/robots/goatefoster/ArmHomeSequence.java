@@ -3,7 +3,6 @@ package com.team4278.robots.goatefoster;
 import com.qualcomm.robotcore.robocol.Telemetry;
 import com.team4278.MultiStep;
 import com.team4278.SequenceStep;
-import com.team4278.TimedSequenceStep;
 import com.team4278.genericsteps.HardResetEncodersStep;
 
 /**
@@ -20,7 +19,7 @@ public class ArmHomeSequence
 
 		public HomeArmReverseStep(Telemetry telemetry, RobotGoatEFoster robot, double power)
 		{
-			super(telemetry);
+			super();
 
 			this.power = power;
 
@@ -43,7 +42,7 @@ public class ArmHomeSequence
 		@Override
 		public void end()
 		{
-			robot.armMotors.stopMotors();
+			robot.armMotors.stop();
 		}
 
 	}
@@ -55,7 +54,7 @@ public class ArmHomeSequence
 		public HomeArmForwardsStep(Telemetry telemetry, RobotGoatEFoster robot)
 		{
 			//TODO actual value
-			super(telemetry, 300);
+			super(300);
 
 			this.robot = robot;
 		}
@@ -70,7 +69,7 @@ public class ArmHomeSequence
 		@Override
 		public void end()
 		{
-			robot.armMotors.stopMotors();
+			robot.armMotors.stop();
 		}
 
 		@Override

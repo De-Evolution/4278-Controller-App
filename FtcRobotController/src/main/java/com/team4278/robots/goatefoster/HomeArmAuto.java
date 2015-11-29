@@ -9,6 +9,6 @@ public class HomeArmAuto extends SequenceOpMode
 {
 	public HomeArmAuto()
 	{
-		super(new ArmHomeSequence());
+		super(ArmHomeSequence.buildSequence();
 	}
 }
