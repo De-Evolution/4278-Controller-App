@@ -34,6 +34,7 @@ package com.qualcomm.ftcrobotcontroller.opmodes;
 import com.qualcomm.robotcore.eventloop.opmode.OpModeManager;
 import com.qualcomm.robotcore.eventloop.opmode.OpModeRegister;
 import com.team4278.robots.goatefoster.HomeArmAuto;
+import com.team4278.test.ParallelismTestOpMode;
 import com.team4278.test.PrereqTestOpMode;
 
 /**
@@ -68,6 +69,8 @@ public class FtcOpModeRegister implements OpModeRegister {
 //	  manager.register("HonkenTeleOp", HonkenTeleOp.class);
 
     manager.register("Prereq Test", new PrereqTestOpMode());
+
+    manager.register("Parallel Test", ParallelismTestOpMode.class);
 
   }
 }

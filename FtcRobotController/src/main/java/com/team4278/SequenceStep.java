@@ -15,6 +15,9 @@ public abstract class SequenceStep
 {
 	protected String className;
 
+	//set to the current time when the step is initialized
+	private long startTime;
+
 	private long timeLimit;
 
 	private boolean isTimed;
@@ -36,18 +39,23 @@ public abstract class SequenceStep
 		stepsAfter = new LinkedList<SequenceStep>();
 
 		stepsBeforeAdded = false;
+
+		isTimed = false;
 	}
 
 	/**
 	 * Construct the step with a time limit after which it will be killed.
 	 *
 	 * You can call wasTimeKilled() in end() to determine if the command was stopped because it hit the time limit.
-	 * @param timeLimit THe time limit in milliseconds.
+	 * @param timeLimit The time limit in milliseconds.
 	 */
 	public SequenceStep(long timeLimit)
 	{
+		this();
+
 		this.timeLimit = timeLimit;
-		className = getClass().getSimpleName();
+
+		isTimed = true;
 	}
 
 
@@ -80,12 +88,25 @@ public abstract class SequenceStep
 	{
 		if(isTimed)
 		{
-			return -1;
+			return timeLimit;
 		}
 		else
 		{
-			return timeLimit;
+			return -1;
 		}
+	}
+
+	/**
+	 * @return How long the command has been running, in milliseconds
+	 */
+	public long getRunTime()
+	{
+		return System.currentTimeMillis() - startTime;
+	}
+
+	public void setStartTime(long startTime)
+	{
+		this.startTime = startTime;
 	}
 
 	public boolean isTimed()

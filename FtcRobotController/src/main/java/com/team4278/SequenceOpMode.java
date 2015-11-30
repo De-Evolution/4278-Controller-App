@@ -28,8 +28,6 @@ public abstract class SequenceOpMode extends OpMode
 
 		LinkedList<SequenceStep> steps;
 
-		long currentStepStartTime;
-
 		State state;
 
 		public SequenceThread(LinkedList<SequenceStep> steps)
@@ -99,15 +97,14 @@ public abstract class SequenceOpMode extends OpMode
 				case INITIALIZING:
 					thread.currentStep.init();
 					thread.state = State.POSTINIT;
-					thread.currentStepStartTime = System.currentTimeMillis();
+					thread.currentStep.setStartTime(System.currentTimeMillis());
 					break;
 				case POSTINIT:
 					thread.currentStep.second_init();
 					thread.state = State.RUNNING;
 					break;
 				case RUNNING:
-					boolean overtime = thread.currentStep.isTimed() &&
-							System.currentTimeMillis() - thread.currentStepStartTime < thread.currentStep.getTimeLimit();
+					boolean overtime = thread.currentStep.isTimed() && thread.currentStep.getRunTime() > thread.currentStep.getTimeLimit();
 
 					if(overtime || !thread.currentStep.loop())
 					{

@@ -1,8 +1,25 @@
 package com.team4278.robots.goatefoster;
 
+import com.team4278.ButtonListenerTeleop;
+import com.team4278.SequenceStep;
+
+import java.util.LinkedList;
+
 /**
- * Created by Jamie on 11/28/2015.
+ * Teleop program for Goat E Foster
  */
-public class DrivingTestAuto
+public class DrivingTestAuto extends ButtonListenerTeleop
 {
+	@Override
+	public void onButtonPressed(Button button)
+	{
+
+	}
+
+	@Override
+	public void onButtonReleased(Button button)
+	{
+
+	}
+
 }

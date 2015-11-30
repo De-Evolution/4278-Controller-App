@@ -117,6 +117,12 @@ public abstract class ButtonListenerTeleop extends SequenceOpMode
 		super.spawnThread(stepsList);
 	}
 
+	@Override
+	public void addSteps(LinkedList<SequenceStep> steps)
+	{
+		//do nothing
+	}
+
 	/**
 	 * Called when a button on the controller is pressed.
 	 * @param button the button which was pressed
