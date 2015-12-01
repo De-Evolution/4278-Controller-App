@@ -385,4 +385,21 @@ public class Drivetrain
 
 		rightMotors.setPower(RobotMath.clampDouble(powY - powX, -1.0, 1.0));
 	}
+
+	//joystick inputs less than this value will be considered zero.
+	//used to compensate for joystick drift
+	public static double JOYSTICK_THRESHOLD_AMOUNT = .1;
+
+	/**
+	 * Thresholds the provided joystick input based on the provided value.
+	 */
+	public static double thresholdJoystickInput(double input)
+	{
+		if(Math.abs(input) > JOYSTICK_THRESHOLD_AMOUNT)
+		{
+			return 0;
+		}
+
+		return input;
+	}
 }

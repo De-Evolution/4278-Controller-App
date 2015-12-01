@@ -26,10 +26,13 @@ public class MotorGroup
 	DcMotor.Direction direction = DcMotor.Direction.FORWARD;
 
 	/**
-	 * Scale factor to multiply motor power sets by.  if negative, the motor is inverted.
+	 * Scale factor to multiply motor power sets by.
 	 *
+	 * Defaults to .777, which is required for NeveRest 40 motors in encoded mode.
 	 */
-	double scaleFactor = 1;
+
+	//TODO possibly a better way of handling this
+	double scaleFactor = .777;
 
 	private DcMotorController.RunMode currentMode;
 

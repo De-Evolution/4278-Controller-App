@@ -33,9 +33,8 @@ package com.qualcomm.ftcrobotcontroller.opmodes;
 
 import com.qualcomm.robotcore.eventloop.opmode.OpModeManager;
 import com.qualcomm.robotcore.eventloop.opmode.OpModeRegister;
+import com.team4278.robots.goatefoster.GoatTeleop;
 import com.team4278.robots.goatefoster.HomeArmAuto;
-import com.team4278.test.ParallelismTestOpMode;
-import com.team4278.test.PrereqTestOpMode;
 
 /**
  * Register Op Modes
@@ -58,19 +57,22 @@ public class FtcOpModeRegister implements OpModeRegister {
      * If two or more op modes are registered with the same name, the app will display an error.
      */
 
+	  manager.register("Goat Teleop", new GoatTeleop());
+
+	  manager.register("Home Arm Auto", new HomeArmAuto());
 
     /*
      * The NullOp op mode
      */
     manager.register("NullOp", NullOp.class);
 
-    manager.register("Home Arm", HomeArmAuto.class);
-//
 //	  manager.register("HonkenTeleOp", HonkenTeleOp.class);
 
-    manager.register("Prereq Test", new PrereqTestOpMode());
-
-    manager.register("Parallel Test", ParallelismTestOpMode.class);
+	  //Testing OpModes
+	  //------------------------------------------------------
+//    manager.register("Prereq Test", new PrereqTestOpMode());
+//
+//    manager.register("Parallel Test", ParallelismTestOpMode.class);
 
   }
 }

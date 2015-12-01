@@ -1,18 +1,20 @@
 package com.team4278.robots.goatefoster;
 
-import com.team4278.motion.Drivetrain;
-import com.team4278.motion.MotorGroup;
-import com.team4278.utils.RoboLog;
-import com.team4278.utils.Units;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.hardware.DigitalChannel;
 import com.qualcomm.robotcore.hardware.Servo;
+import com.team4278.motion.Drivetrain;
+import com.team4278.motion.MotorGroup;
+import com.team4278.utils.Units;
 
 /**
  * Robot class for Goat-E Foster
  */
 public class RobotGoatEFoster
 {
+
+	public static double BRAKE_POSITION_BRAKING = .75;
+	public static double BRAKE_POSITION_RELEASED = .25;
 
 	public Drivetrain drivetrain;
 
