@@ -27,7 +27,7 @@ public class Drivetrain
 
 	final static double MOVE_COMPLETE_TOLERANCE_CM = 3;
 
-	double completionToleranceCounts;
+	double completionToleranceRotations;
 
 	private double wheelCircumference;
 
@@ -51,9 +51,6 @@ public class Drivetrain
 
 	static Pattern leftMotorPattern, rightMotorPattern;
 
-	//360 for most encoders, excep the NeveRest ones
-	private double encoderCountsPerRev;
-
 	static
 	{
 		leftMotorPattern =  Pattern.compile("(left.*motor.*)|((drv|drive).*left.*)", Pattern.CASE_INSENSITIVE);
@@ -76,8 +73,8 @@ public class Drivetrain
 		MotorGroup leftMotorGroup;
 		MotorGroup rightMotorGroup;
 
-		leftMotorGroup = new MotorGroup(useEncoders);
-		rightMotorGroup = new MotorGroup(useEncoders);
+		leftMotorGroup = new MotorGroup(useEncoders, encoderCountsPerRev);
+		rightMotorGroup = new MotorGroup(useEncoders, encoderCountsPerRev);
 
 		for(Map.Entry<String, DcMotor> motorEntry : opMode.hardwareMap.dcMotor.entrySet())
 		{
@@ -122,24 +119,17 @@ public class Drivetrain
 		}
 		this.telemetry = opMode.telemetry;
 
-		completionToleranceCounts = getEncoderByCm(MOVE_COMPLETE_TOLERANCE_CM);
-
-		this.encoderCountsPerRev = encoderCountsPerRev;
+		completionToleranceRotations = getRotationsByCm(MOVE_COMPLETE_TOLERANCE_CM);
 	}
 
 	/**
-	 * Get the number of encoder ticks for the provided distance of linear movement.
+	 * Get the number of rotations for the provided distance of linear movement.
 	 * @param cm
 	 * @return
 	 */
-	int getEncoderByCm(double cm)
+	double getRotationsByCm(double cm)
 	{
-		return RobotMath.floor_double_int((encoderCountsPerRev) * (cm) / wheelCircumference);
-	}
-	
-	double getCmByEncoder(double encode) 
-	{
-		return (encode/ encoderCountsPerRev)*wheelCircumference;
+		return cm / wheelCircumference;
 	}
 
 	/**
@@ -180,23 +170,21 @@ public class Drivetrain
 	}
 
 	/**
-	 * Checks if the provided encoder values are close enough according to the tolerance for the move (or at least that side) to be considered done.
-	 * @param current
-	 * @param desired
+	 * Checks if the provided distances values are close enough according to the tolerance for the move (or at least that side) to be considered done.
+	 * @param current current distance in r
+	 * @param desired desired distance in r
 	 * @return
 	 */
-	private boolean isCloseEnough(int current, int desired)
+	private boolean isCloseEnough(double current, double desired)
 	{
-		return Math.abs(current - desired)  < completionToleranceCounts;
+		return Math.abs(current - desired)  < completionToleranceRotations;
 	}
 
 	public class MoveForwardStep extends SequenceStep
 	{
-		int targetEncCount;
+		double targetDistanceRotations;
 
-		int norm;
-
-		int leftPos, rightPos = 0;
+		double leftPos, rightPos = 0;
 
 		/**
 		 * Move forward a distance.
@@ -209,8 +197,7 @@ public class Drivetrain
 
 
 			clearEncoders();
-			targetEncCount = Math.abs(getEncoderByCm(cm));
-			norm = (int) RobotMath.sgn(cm);
+			targetDistanceRotations = getRotationsByCm(cm);
 
 		}
 
@@ -219,16 +206,16 @@ public class Drivetrain
 		{
 			leftPos = leftMotors.getCurrentPosition();
 			rightPos = rightMotors.getCurrentPosition();
-			Log.d("moveForward()", String.format("left: %d%%, right: %d%%", leftPos * 100 / targetEncCount, rightPos * 100 / targetEncCount));
+			Log.d("moveForward()", String.format("left: %f%%, right: %f%%", leftPos * 100 /targetDistanceRotations, rightPos * 100 / targetDistanceRotations));
 
-			return !isCloseEnough(leftPos, targetEncCount) && !isCloseEnough(rightPos, targetEncCount);
+			return !isCloseEnough(leftPos, targetDistanceRotations) && !isCloseEnough(rightPos, targetDistanceRotations);
 		}
 
 		@Override
 		public void init()
 		{
-			leftMotors.setTargetPosition(targetEncCount, MOTOR_POWER_FOR_AUTO_MOVES);
-			rightMotors.setTargetPosition(targetEncCount, MOTOR_POWER_FOR_AUTO_MOVES);
+			leftMotors.setTargetPosition(targetDistanceRotations, MOTOR_POWER_FOR_AUTO_MOVES);
+			rightMotors.setTargetPosition(targetDistanceRotations, MOTOR_POWER_FOR_AUTO_MOVES);
 		}
 
 		@Override
@@ -255,9 +242,9 @@ public class Drivetrain
 	 */
 	public class ArcTurnStep extends SequenceStep
 	{
-		int targetEncCount;
+		double targetRotations;
 
-		int motorPos = 0;
+		double motorPos = 0;
 
 		MotorGroup motorsToTurnWith;
 
@@ -266,7 +253,7 @@ public class Drivetrain
 			super(msec);
 
 			clearEncoders();
-			targetEncCount = getEncoderByCm(2 * turningCircleCircumference * (degs / 360.0));
+			targetRotations = getRotationsByCm(2 * turningCircleCircumference * (degs / 360.0));
 
 			motorsToTurnWith = getMotorsForSide(directionToTurn.getOpposite());
 
@@ -276,15 +263,15 @@ public class Drivetrain
 		public boolean loop()
 		{
 			motorPos = motorsToTurnWith.getCurrentPosition();
-			telemetryMessage((motorPos * 100 / targetEncCount) + "%");
+			telemetryMessage((motorPos * 100 / targetRotations) + "%");
 
-			return !isCloseEnough(motorPos, targetEncCount);
+			return !isCloseEnough(motorPos, targetRotations);
 		}
 
 		@Override
 		public void init()
 		{
-			motorsToTurnWith.setTargetPosition(targetEncCount, MOTOR_POWER_FOR_AUTO_MOVES);
+			motorsToTurnWith.setTargetPosition(targetRotations, MOTOR_POWER_FOR_AUTO_MOVES);
 		}
 
 		@Override
@@ -307,9 +294,9 @@ public class Drivetrain
 
 	public class InPlaceTurnStep extends SequenceStep
 	{
-		int targetEncCount;
+		double targetRotations;
 
-		int forwardPos, backwardsPos = 0;
+		double forwardPos, backwardsPos = 0;
 
 		MotorGroup backwardsMotors;  //the motors that move backwards.  When turning LEFT, these would be the LEFT motors.
 		MotorGroup forwardsMotors;
@@ -319,7 +306,7 @@ public class Drivetrain
 			super(msec);
 
 			clearEncoders();
-			targetEncCount = getEncoderByCm(turningCircleCircumference * (degs / 360.0));
+			targetRotations = getRotationsByCm(turningCircleCircumference * (degs / 360.0));
 
 			backwardsMotors = getMotorsForSide(directionToTurn);
 			forwardsMotors = getMotorsForSide(directionToTurn.getOpposite());
@@ -332,16 +319,16 @@ public class Drivetrain
 			forwardPos = forwardsMotors.getCurrentPosition();
 			backwardsPos = backwardsMotors.getCurrentPosition();
 
-			telemetryMessage(String.format("fwd: %d%%, back: %d%%", forwardPos * 100 / targetEncCount, backwardsPos * 100 / targetEncCount));
+			telemetryMessage(String.format("fwd: %f%%, back: %f%%", forwardPos * 100 / targetRotations, backwardsPos * 100 / targetRotations));
 
-			return !isCloseEnough(forwardPos, targetEncCount) && !isCloseEnough(backwardsPos, -targetEncCount);
+			return !isCloseEnough(forwardPos, targetRotations) && !isCloseEnough(backwardsPos, -targetRotations);
 		}
 
 		@Override
 		public void init()
 		{
-			forwardsMotors.setTargetPosition(targetEncCount, MOTOR_POWER_FOR_AUTO_MOVES);
-			backwardsMotors.setTargetPosition(-1 * targetEncCount, MOTOR_POWER_FOR_AUTO_MOVES);
+			forwardsMotors.setTargetPosition(targetRotations, MOTOR_POWER_FOR_AUTO_MOVES);
+			backwardsMotors.setTargetPosition(-1 * targetRotations, MOTOR_POWER_FOR_AUTO_MOVES);
 		}
 
 		@Override
@@ -395,7 +382,7 @@ public class Drivetrain
 	 */
 	public static double thresholdJoystickInput(double input)
 	{
-		if(Math.abs(input) > JOYSTICK_THRESHOLD_AMOUNT)
+		if(Math.abs(input) < JOYSTICK_THRESHOLD_AMOUNT)
 		{
 			return 0;
 		}

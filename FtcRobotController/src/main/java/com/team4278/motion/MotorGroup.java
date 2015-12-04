@@ -1,10 +1,9 @@
 package com.team4278.motion;
 
-import android.util.Pair;
-
 import com.qualcomm.hardware.HiTechnicNxtDcMotorController;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorController;
+import com.team4278.utils.MutablePair;
 import com.team4278.utils.RobotMath;
 
 import java.util.HashSet;
@@ -17,28 +16,21 @@ import java.util.Set;
  */
 public class MotorGroup
 {
-	//set of motors and their respective encoder ignore distances
-	protected Set<Pair<DcMotor, Integer>> motors;
+	//set of motors and their respective encoder ignore distances (in counts)
+	protected Set<MutablePair<DcMotor, Integer>> motors;
 	protected Set<HiTechnicNxtDcMotorController> legacyControllers;
 
 	private DcMotor preferredEncoderMotor;
 
 	DcMotor.Direction direction = DcMotor.Direction.FORWARD;
 
-	/**
-	 * Scale factor to multiply motor power sets by.
-	 *
-	 * Defaults to .777, which is required for NeveRest 40 motors in encoded mode.
-	 */
-
-	//TODO possibly a better way of handling this
-	double scaleFactor = .777;
+	double scaleFactor = 1.0;
 
 	private DcMotorController.RunMode currentMode;
 
 	boolean hasEncoder;
 
-
+	double encCountsPerRevolution;
 
 	/**
 	 *
@@ -66,7 +58,7 @@ public class MotorGroup
 	public void setReversed(boolean inverted)
 	{
 		direction = inverted ? DcMotor.Direction.REVERSE : DcMotor.Direction.FORWARD;
-		for(Pair<DcMotor, Integer> motorPair : motors)
+		for(MutablePair<DcMotor, Integer> motorPair : motors)
 		{
 			motorPair.first.setDirection(direction);
 		}
@@ -83,15 +75,20 @@ public class MotorGroup
 	/**
 	 *
 	 * @param encoded whether the group has an encoder attached.  This controls whether the motors will be set to open or closed loop mode.
+	 * @param encCountsPerRevolution the number of counts the encoder produces per revolution each time the output shaft goes around once.
 	 * @param toAdd the DcMotor to add to the group
 	 */
-	public MotorGroup(boolean encoded, DcMotor... toAdd)
+	public MotorGroup(boolean encoded, double encCountsPerRevolution, DcMotor... toAdd)
 	{
-		motors = new HashSet<Pair<DcMotor, Integer>>();
+		motors = new HashSet<MutablePair<DcMotor, Integer>>();
 
 		currentMode = encoded ? DcMotorController.RunMode.RUN_USING_ENCODERS : DcMotorController.RunMode.RUN_WITHOUT_ENCODERS;
 
 		hasEncoder = encoded;
+
+		legacyControllers = new HashSet<HiTechnicNxtDcMotorController>();
+
+		this.encCountsPerRevolution = encCountsPerRevolution;
 
 		if(toAdd != null && toAdd.length > 0)
 		{
@@ -101,13 +98,12 @@ public class MotorGroup
 			}
 		}
 
-		legacyControllers = new HashSet<HiTechnicNxtDcMotorController>();
 
 	}
 
 	public void addMotor(DcMotor motor)
 	{
-		motors.add(new Pair<DcMotor, Integer>(motor, 0));
+		motors.add(new MutablePair<DcMotor, Integer>(motor, 0));
 		motor.setPower(0);
 		motor.setMode(currentMode);
 		motor.setDirection(direction);
@@ -126,12 +122,13 @@ public class MotorGroup
 	 */
 	public void setPower(double newPower)
 	{
-		if(currentMode == DcMotorController.RunMode.RUN_TO_POSITION)
+		//check if in reset or position mode
+		if(currentMode != DcMotorController.RunMode.RUN_TO_POSITION && currentMode != DcMotorController.RunMode.RUN_USING_ENCODERS)
 		{
 			setRunMode(hasEncoder ? DcMotorController.RunMode.RUN_USING_ENCODERS : DcMotorController.RunMode.RUN_WITHOUT_ENCODERS);
 		}
 
-		for(Pair<DcMotor, Integer> currentMotor : motors)
+		for(MutablePair<DcMotor, Integer> currentMotor : motors)
 		{
 			currentMotor.first.setPower(newPower * scaleFactor);
 		}
@@ -142,7 +139,7 @@ public class MotorGroup
 	 */
 	public void setUnlocked()
 	{
-		for(Pair<DcMotor, Integer> currentMotor : motors)
+		for(MutablePair<DcMotor, Integer> currentMotor : motors)
 		{
 			currentMotor.first.setPowerFloat();
 		}
@@ -159,7 +156,7 @@ public class MotorGroup
 	private void setRunMode(DcMotorController.RunMode newMode)
 	{
 		this.currentMode = newMode;
-		for(Pair<DcMotor, Integer> currentMotor : motors)
+		for(MutablePair<DcMotor, Integer> currentMotor : motors)
 		{
 			currentMotor.first.setMode(newMode);
 		}
@@ -180,23 +177,21 @@ public class MotorGroup
 		setRunMode(DcMotorController.RunMode.RESET_ENCODERS);
 
 		//reset encoder ignore distances
-		for(Pair<DcMotor, Integer> motorPair : motors)
+		for(MutablePair<DcMotor, Integer> motorPair : motors)
 		{
-			motors.remove(motorPair);
-
-			motors.add(new Pair<DcMotor, Integer>(motorPair.first, 0));
+			motorPair.second = 0;
 		}
 	}
 
 	/**
 	 *
-	 * @return  The position of a motor in the group
+	 * @return  The position (that is, distance since the last reset) of a motor in the group in rotations
 	 */
-	public int getCurrentPosition()
+	public double getCurrentPosition()
 	{
-		Pair<DcMotor, Integer> motorPair = motors.iterator().next();
+		MutablePair<DcMotor, Integer> motorPair = motors.iterator().next();
 
-		return motorPair.first.getCurrentPosition() - motorPair.second;
+		return (motorPair.first.getCurrentPosition() - motorPair.second) / encCountsPerRevolution;
 	}
 
 	/**
@@ -207,19 +202,21 @@ public class MotorGroup
 	 * NOTE: calling setPower() will return the motor to speed mode.  If you want to change the speed but keep moving to a position,
 	 * call this function again.
 	 *
-	 * @param position the encoder position to move to in degrees.  Does not have to be between 0 and 359.
+	 * @param position the encoder position to move to in rotations.  Can be negative or positive.
 	 * @param power the motor power to use to move to this position.
 	 */
-	public void setTargetPosition(int position, double power)
+	public void setTargetPosition(double position, double power)
 	{
+		int desiredCounts = RobotMath.floor_double_int(encCountsPerRevolution * position);
+
 		if(currentMode != DcMotorController.RunMode.RUN_TO_POSITION)
 		{
 			setRunMode(DcMotorController.RunMode.RUN_TO_POSITION);
 		}
 
-		for(Pair<DcMotor, Integer> motorPair : motors)
+		for(MutablePair<DcMotor, Integer> motorPair : motors)
 		{
-			motorPair.first.setTargetPosition(position + motorPair.second);
+			motorPair.first.setTargetPosition(desiredCounts + motorPair.second);
 			motorPair.first.setPower(power * scaleFactor);
 		}
 	}
@@ -230,11 +227,9 @@ public class MotorGroup
 	 */
 	public void softResetEncoders()
 	{
-		for(Pair<DcMotor, Integer> motorPair : motors)
+		for(MutablePair<DcMotor, Integer> motorPair : motors)
 		{
-			motors.remove(motorPair);
-
-			motors.add(new Pair<DcMotor, Integer>(motorPair.first, motorPair.first.getCurrentPosition()));
+			motorPair.second = motorPair.first.getCurrentPosition();
 		}
 	}
 

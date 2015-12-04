@@ -24,13 +24,16 @@ public class RobotGoatEFoster
 
 	public MotorGroup armMotors;
 
+	//flag to tell the teleop code not to run the arm from controller input
+	boolean armIsAutoControlled;
+
 	public RobotGoatEFoster(OpMode opMode)
 	{
 		drivetrain = Drivetrain.make(true, 25, 9.9 * Units.CM * Math.PI, 1120, opMode);
 
 		armBrake = opMode.hardwareMap.servo.get("armBrakeServo");
 
-		armMotors = new MotorGroup(true, opMode.hardwareMap.dcMotor.get("mArmTop"), opMode.hardwareMap.dcMotor.get("mArmBottom"));
+		armMotors = new MotorGroup(true, 1120, opMode.hardwareMap.dcMotor.get("mArmTop"), opMode.hardwareMap.dcMotor.get("mArmBottom"));
 
 		homingHallEffect = opMode.hardwareMap.digitalChannel.get("armEndstop");
 	}

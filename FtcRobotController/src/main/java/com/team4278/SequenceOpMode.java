@@ -89,9 +89,16 @@ public abstract class SequenceOpMode extends OpMode
 	public void loop()
 	{
 		SequenceThread thread;
+
+		StringBuilder runningStepsMessage = new StringBuilder();
+
 		for(Iterator<SequenceThread> threadIter = threads.iterator(); threadIter.hasNext();)
 		{
 			thread = threadIter.next();
+
+			runningStepsMessage.append(thread.currentStep.className);
+			runningStepsMessage.append(" ");
+
 			switch(thread.state)
 			{
 				case INITIALIZING:
@@ -126,6 +133,8 @@ public abstract class SequenceOpMode extends OpMode
 					break;
 			}
 		}
+
+		telemetry.addData("Running Steps", runningStepsMessage.toString());
 	}
 
 	/**

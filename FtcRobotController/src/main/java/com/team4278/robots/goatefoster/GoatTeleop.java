@@ -13,11 +13,6 @@ public class GoatTeleop extends ButtonListenerTeleop
 
 	boolean armServoIsBraking = false;
 
-	public GoatTeleop()
-	{
-		robot = new RobotGoatEFoster(this);
-	}
-
 	@Override
 	public void onButtonPressed(Button button)
 	{
@@ -25,7 +20,7 @@ public class GoatTeleop extends ButtonListenerTeleop
 		{
 			case RBUMPER:
 				armServoIsBraking = !armServoIsBraking;
-				executeSequenceSteps(new ArmBrakeStep(robot, armServoIsBraking));
+				robot.armBrake.setPosition(armServoIsBraking ? RobotGoatEFoster.BRAKE_POSITION_BRAKING : RobotGoatEFoster.BRAKE_POSITION_RELEASED);
 				break;
 			case A:
 				executeSequenceSteps(new ArmHomeStep(robot));
@@ -41,12 +36,22 @@ public class GoatTeleop extends ButtonListenerTeleop
 	}
 
 	@Override
+	public void init()
+	{
+		super.init();
+		robot = new RobotGoatEFoster(this);
+	}
+
+	@Override
 	public void loop()
 	{
 		super.loop();
 
 		robot.drivetrain.arcadeDrive(gamepad1.left_stick_x, gamepad1.left_stick_y);
 
-		robot.armMotors.setPower(Drivetrain.thresholdJoystickInput(gamepad1.right_stick_y));
+		if(!robot.armIsAutoControlled)
+		{
+			robot.armMotors.setPower(Drivetrain.thresholdJoystickInput(gamepad1.right_stick_y));
+		}
 	}
 }
