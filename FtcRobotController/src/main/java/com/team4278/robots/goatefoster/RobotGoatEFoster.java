@@ -29,12 +29,16 @@ public class RobotGoatEFoster
 
 	public RobotGoatEFoster(OpMode opMode)
 	{
-		drivetrain = Drivetrain.make(true, 25, 9.9 * Units.CM * Math.PI, 1120, opMode);
+		drivetrain = Drivetrain.make(true, 25, 4.0 * Units.INCH * Math.PI, 1120, opMode);
 
 		armBrake = opMode.hardwareMap.servo.get("armBrakeServo");
 
 		armMotors = new MotorGroup(true, 1120, opMode.hardwareMap.dcMotor.get("mArmTop"), opMode.hardwareMap.dcMotor.get("mArmBottom"));
 
 		homingHallEffect = opMode.hardwareMap.digitalChannel.get("armEndstop");
+
+		//NeverRest 40 motors only produce 78% of the encoder pulses as standard encoders, so 78% power is full speed when running with encoders
+		drivetrain.getLeftMotors().setScaleFactor(.78);
+		drivetrain.getRightMotors().setScaleFactor(.78);
 	}
 }

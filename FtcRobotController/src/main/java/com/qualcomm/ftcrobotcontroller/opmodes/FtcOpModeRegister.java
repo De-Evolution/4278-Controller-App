@@ -33,8 +33,8 @@ package com.qualcomm.ftcrobotcontroller.opmodes;
 
 import com.qualcomm.robotcore.eventloop.opmode.OpModeManager;
 import com.qualcomm.robotcore.eventloop.opmode.OpModeRegister;
+import com.team4278.robots.goatefoster.ClimbMountainAuto;
 import com.team4278.robots.goatefoster.GoatTeleop;
-import com.team4278.robots.goatefoster.HomeArmAuto;
 
 /**
  * Register Op Modes
@@ -59,7 +59,7 @@ public class FtcOpModeRegister implements OpModeRegister {
 
 	  manager.register("Goat Teleop", new GoatTeleop());
 
-	  manager.register("Home Arm Auto", new HomeArmAuto());
+	  manager.register("Climb Mountain Auto", new ClimbMountainAuto());
 
     /*
      * The NullOp op mode

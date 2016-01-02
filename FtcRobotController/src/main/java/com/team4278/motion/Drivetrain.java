@@ -1,12 +1,11 @@
 package com.team4278.motion;
 
-import android.util.Log;
-
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.robocol.Telemetry;
 import com.team4278.SequenceStep;
+import com.team4278.genericsteps.HardResetEncodersStep;
 import com.team4278.utils.RoboLog;
 import com.team4278.utils.RobotMath;
 import com.team4278.utils.Side;
@@ -23,7 +22,7 @@ public class Drivetrain
 	final static int PAUSE_TIME = 250;
 
 	//motor power to use for run to position moves
-	final static double MOTOR_POWER_FOR_AUTO_MOVES = .4;
+	final static double MOTOR_POWER_FOR_AUTO_MOVES = .6;
 
 	final static double MOVE_COMPLETE_TOLERANCE_CM = 3;
 
@@ -91,7 +90,7 @@ public class Drivetrain
 			}
 		}
 
-		leftMotorGroup.setReversed(true);
+		rightMotorGroup.setReversed(true);
 
 		return new Drivetrain(wheelbase, wheelCircumference, encoderCountsPerRev, leftMotorGroup, rightMotorGroup, opMode);
 	}
@@ -195,20 +194,30 @@ public class Drivetrain
 		{
 			super(msec);
 
-
-			clearEncoders();
 			targetDistanceRotations = getRotationsByCm(cm);
+
+			addStepBefore(new HardResetEncodersStep(leftMotors));
+			addStepBefore(new HardResetEncodersStep(rightMotors));
 
 		}
 
 		@Override
 		public boolean loop()
 		{
-			leftPos = leftMotors.getCurrentPosition();
-			rightPos = rightMotors.getCurrentPosition();
-			Log.d("moveForward()", String.format("left: %f%%, right: %f%%", leftPos * 100 /targetDistanceRotations, rightPos * 100 / targetDistanceRotations));
+//			leftPos = leftMotors.getCurrentPosition();
+//			rightPos = rightMotors.getCurrentPosition();
+//			Log.d("moveForward()", String.format("left: %f%%, right: %f%%", leftPos * 100 /targetDistanceRotations, rightPos * 100 / targetDistanceRotations));
+//
+//			return !isCloseEnough(leftPos, targetDistanceRotations) && !isCloseEnough(rightPos, targetDistanceRotations);
 
-			return !isCloseEnough(leftPos, targetDistanceRotations) && !isCloseEnough(rightPos, targetDistanceRotations);
+			return true;
+		}
+
+		@Override
+		public void second_init()
+		{
+			//leftMotors.setReadMode();
+			//rightMotors.setReadMode();
 		}
 
 		@Override
@@ -221,15 +230,18 @@ public class Drivetrain
 		@Override
 		public void end()
 		{
-			if(wasTimeKilled())
-			{
-				lockdownRobot();
-				telemetryMessage("Emergency Killed!");
-			}
-			else
-			{
-				telemetryMessage("Done!");
-			}
+			leftMotors.setWriteMode();
+			rightMotors.setWriteMode();
+
+//			if(wasTimeKilled())
+//			{
+//				lockdownRobot();
+//				telemetryMessage("Emergency Killed!");
+//			}
+//			else
+//			{
+//				telemetryMessage("Done!");
+//			}
 			stopMotors();
 
 		}
@@ -252,20 +264,23 @@ public class Drivetrain
 		{
 			super(msec);
 
-			clearEncoders();
 			targetRotations = getRotationsByCm(2 * turningCircleCircumference * (degs / 360.0));
 
 			motorsToTurnWith = getMotorsForSide(directionToTurn.getOpposite());
+
+			addStepBefore(new HardResetEncodersStep(motorsToTurnWith));
 
 		}
 
 		@Override
 		public boolean loop()
 		{
-			motorPos = motorsToTurnWith.getCurrentPosition();
-			telemetryMessage((motorPos * 100 / targetRotations) + "%");
+//			motorPos = motorsToTurnWith.getCurrentPosition();
+//			telemetryMessage((motorPos * 100 / targetRotations) + "%");
+//
+//			return !isCloseEnough(motorPos, targetRotations);
 
-			return !isCloseEnough(motorPos, targetRotations);
+			return false;
 		}
 
 		@Override
@@ -305,11 +320,13 @@ public class Drivetrain
 		{
 			super(msec);
 
-			clearEncoders();
 			targetRotations = getRotationsByCm(turningCircleCircumference * (degs / 360.0));
 
 			backwardsMotors = getMotorsForSide(directionToTurn);
 			forwardsMotors = getMotorsForSide(directionToTurn.getOpposite());
+
+			addStepBefore(new HardResetEncodersStep(leftMotors));
+			addStepBefore(new HardResetEncodersStep(rightMotors));
 
 		}
 
@@ -334,6 +351,9 @@ public class Drivetrain
 		@Override
 		public void end()
 		{
+			leftMotors.setWriteMode();
+			rightMotors.setWriteMode();
+
 			if(wasTimeKilled())
 			{
 				lockdownRobot();
@@ -345,6 +365,14 @@ public class Drivetrain
 			}
 			stopMotors();
 
+		}
+
+
+		@Override
+		public void second_init()
+		{
+			leftMotors.setReadMode();
+			rightMotors.setReadMode();
 		}
 
 	}

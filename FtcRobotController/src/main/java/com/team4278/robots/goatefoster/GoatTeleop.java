@@ -1,7 +1,6 @@
 package com.team4278.robots.goatefoster;
 
 import com.team4278.ButtonListenerTeleop;
-import com.team4278.motion.Drivetrain;
 
 /**
  * Created by Jamie on 11/29/2015.
@@ -23,7 +22,7 @@ public class GoatTeleop extends ButtonListenerTeleop
 				robot.armBrake.setPosition(armServoIsBraking ? RobotGoatEFoster.BRAKE_POSITION_BRAKING : RobotGoatEFoster.BRAKE_POSITION_RELEASED);
 				break;
 			case A:
-				executeSequenceSteps(new ArmHomeStep(robot));
+			//	executeSequenceSteps(new ArmHomeStep(robot));
 				break;
 		}
 
@@ -47,11 +46,11 @@ public class GoatTeleop extends ButtonListenerTeleop
 	{
 		super.loop();
 
-		robot.drivetrain.arcadeDrive(gamepad1.left_stick_x, gamepad1.left_stick_y);
+		robot.drivetrain.tankDrive(gamepad1.left_stick_y, gamepad1.right_stick_y);
 
 		if(!robot.armIsAutoControlled)
 		{
-			robot.armMotors.setPower(Drivetrain.thresholdJoystickInput(gamepad1.right_stick_y));
+			//robot.armMotors.setPower(Drivetrain.thresholdJoystickInput(gamepad1.right_stick_y));
 		}
 	}
 }

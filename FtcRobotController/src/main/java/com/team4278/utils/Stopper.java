@@ -1,12 +1,8 @@
 package com.team4278.utils;
 
-import com.qualcomm.ftccommon.FtcEventLoop;
 import com.qualcomm.ftcrobotcontroller.FtcRobotControllerActivity;
-import com.team4278.motion.MotorGroup;
-import com.qualcomm.robotcore.eventloop.opmode.OpModeManager;
 import com.qualcomm.robotcore.exception.RobotCoreException;
-
-import java.lang.reflect.Field;
+import com.team4278.motion.MotorGroup;
 
 /**
  * HELP! JANE! STOP THIS CRAZY THING!
@@ -61,18 +57,18 @@ public class Stopper
 		stopMotors(motorsToStop);
 
 		//stop current opmode
-		try
-		{
-			Field opModeManagerField = FtcEventLoop.class.getDeclaredFields()[1]; //why is this not a public variable?
-			opModeManagerField.setAccessible(true);
-			OpModeManager opModeManager = (OpModeManager) opModeManagerField.get(FtcRobotControllerActivity.eventLoop);
-			opModeManager.stopActiveOpMode();
-		}
-		catch (Exception ex)
-		{
-			ex.printStackTrace();
-			estop();
-		}
+//		try
+//		{
+//			Field opModeManagerField = FtcEventLoop.class.getDeclaredFields()[1]; //why is this not a public variable?
+//			opModeManagerField.setAccessible(true);
+//			OpModeManager opModeManager = (OpModeManager) opModeManagerField.get(FtcRobotControllerActivity.eventLoop);
+//			opModeManager.stopActiveOpMode();
+//		}
+//		catch (Exception ex)
+//		{
+//			ex.printStackTrace();
+//			estop();
+//		}
 
 		RoboLog.recoverable("Robot locked down.");
 
