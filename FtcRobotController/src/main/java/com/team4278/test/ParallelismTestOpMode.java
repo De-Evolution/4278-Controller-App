@@ -1,7 +1,5 @@
 package com.team4278.test;
 
-import android.util.Log;
-
 import com.team4278.SequenceOpMode;
 import com.team4278.SequenceStep;
 import com.team4278.utils.RoboLog;
@@ -40,14 +38,14 @@ public class ParallelismTestOpMode extends SequenceOpMode
 		@Override
 		public boolean loop()
 		{
-			RoboLog.info("Step running: " + name);
+			//RoboLog.info("Step running: " + name);
 			return true;
 		}
 
 		@Override
-		public void end()
+		public void end(EndReason reason)
 		{
-			RoboLog.info("Step " + name + " ran for " + getRunTime() + " ms");
+			RoboLog.info("Step " + name + " ran for " + getRunTime() + " ms, ended because it was " + reason.name().toLowerCase());
 		}
 	}
 
@@ -66,5 +64,11 @@ public class ParallelismTestOpMode extends SequenceOpMode
 		parallelTwo.addStepAfter(p2Postreq);
 
 		steps.add(seedStep);
+	}
+
+	@Override
+	public void addInitSteps(LinkedList<SequenceStep> steps)
+	{
+		steps.add(new ThreadingTestStep("init step", 1000));
 	}
 }

@@ -35,6 +35,8 @@ import com.qualcomm.robotcore.eventloop.opmode.OpModeManager;
 import com.qualcomm.robotcore.eventloop.opmode.OpModeRegister;
 import com.team4278.robots.goatefoster.ClimbMountainAuto;
 import com.team4278.robots.goatefoster.GoatTeleop;
+import com.team4278.test.ParallelismTestOpMode;
+import com.team4278.test.PrereqTestOpMode;
 
 /**
  * Register Op Modes
@@ -70,9 +72,9 @@ public class FtcOpModeRegister implements OpModeRegister {
 
 	  //Testing OpModes
 	  //------------------------------------------------------
-//    manager.register("Prereq Test", new PrereqTestOpMode());
+      manager.register("Prereq Test", new PrereqTestOpMode());
 //
-//    manager.register("Parallel Test", ParallelismTestOpMode.class);
+      manager.register("Parallel Test", ParallelismTestOpMode.class);
 
   }
 }

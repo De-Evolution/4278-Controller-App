@@ -29,7 +29,7 @@ public class LogMessageStep extends SequenceStep
 	}
 
 	@Override
-	public void end()
+	public void end(EndReason reason)
 	{
 
 	}

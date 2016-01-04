@@ -49,7 +49,7 @@ public class ArmHomeStep extends SequenceStep
 
 
 		@Override
-		public void end()
+		public void end(EndReason reason)
 		{
 			robot.armMotors.stop();
 		}
@@ -102,7 +102,7 @@ public class ArmHomeStep extends SequenceStep
 
 
 	@Override
-	public void end()
+	public void end(EndReason reason)
 	{
 		robot.armMotors.stop();
 	}

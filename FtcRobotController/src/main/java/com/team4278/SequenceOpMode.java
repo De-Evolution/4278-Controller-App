@@ -30,6 +30,8 @@ public abstract class SequenceOpMode extends OpMode
 
 		State state;
 
+		SequenceStep.EndReason endReason; //used to store the reason the step was killed so it can be passed to end() in the next cycle
+
 		public SequenceThread(LinkedList<SequenceStep> steps)
 		{
 			this.steps = steps;
@@ -69,11 +71,34 @@ public abstract class SequenceOpMode extends OpMode
 	 */
 	public abstract void addSteps(LinkedList<SequenceStep> steps);
 
+	/**
+	 * Similar to addSteps, override this to add steps which will be run during the init phase (when the user has pressed init, but not start)
+	 */
+	public void addInitSteps(LinkedList<SequenceStep> steps)
+	{}
+
 	@Override
 	public void init()
 	{
 		//set global telemetry variable
 		RoboLog.telemetryToUse = telemetry;
+
+		LinkedList<SequenceStep> initStepsToExecute = new LinkedList<SequenceStep>();
+
+		addInitSteps(initStepsToExecute);
+
+		if(!initStepsToExecute.isEmpty())
+		{
+			spawnThread(initStepsToExecute);
+		}
+	}
+
+	@Override
+	public void start()
+	{
+		//halt any sequences running during init
+		stop();
+
 
 		LinkedList<SequenceStep> stepsToExecute = new LinkedList<SequenceStep>();
 
@@ -83,6 +108,13 @@ public abstract class SequenceOpMode extends OpMode
 		{
 			spawnThread(stepsToExecute);
 		}
+
+	}
+
+	@Override
+	public void init_loop()
+	{
+		loop();
 	}
 
 	@Override
@@ -113,14 +145,19 @@ public abstract class SequenceOpMode extends OpMode
 				case RUNNING:
 					boolean overtime = thread.currentStep.isTimed() && thread.currentStep.getRunTime() > thread.currentStep.getTimeLimit();
 
-					if(overtime || !thread.currentStep.loop())
+					if(overtime)
 					{
-						thread.currentStep.wasTimeKilled = overtime;
 						thread.state = State.ENDING;
+						thread.endReason = SequenceStep.EndReason.TIME_KILLED;
+					}
+					else if(!thread.currentStep.loop())
+					{
+						thread.state = State.ENDING;
+						thread.endReason = SequenceStep.EndReason.FINISHED;
 					}
 					break;
 				case ENDING:
-					thread.currentStep.end();
+					thread.currentStep.end(thread.endReason);
 
 					if(thread.steps.isEmpty())
 					{
@@ -176,11 +213,11 @@ public abstract class SequenceOpMode extends OpMode
 	@Override
 	public void stop()
 	{
-		super.stop();
-
 		for(SequenceThread thread : threads)
 		{
-			thread.currentStep.end();
+			thread.currentStep.end(SequenceStep.EndReason.INTERRUPTED);
 		}
+
+		threads.clear();
 	}
 }

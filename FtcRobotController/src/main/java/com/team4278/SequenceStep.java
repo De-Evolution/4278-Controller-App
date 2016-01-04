@@ -22,13 +22,23 @@ public abstract class SequenceStep
 
 	private boolean isTimed;
 
-	boolean wasTimeKilled;
-
 	//flag used during execution to tell if the step's prerequisites have already been added to the queue
 	boolean stepsBeforeAdded;
 
 	//these three lists are lazily evaluated to determine which steps will be executed next
 	private LinkedList<SequenceStep> stepsBefore, stepsAfter, stepsParallel;
+
+	/**
+	 * Enum for reasons why end() was called.
+	 *
+	 * Exists because steps might want to behave differently if they ran out of time compared to if they ended "naturally" (because loop() returned false)
+	 */
+	public enum EndReason
+	{
+		FINISHED, //loop() returned false
+		TIME_KILLED,//time limit was reached
+		INTERRUPTED // user pressed "stop", robot was e-stopped, or the step was running in init and the user pressed "start"
+	}
 
 	public SequenceStep()
 	{
@@ -71,11 +81,6 @@ public abstract class SequenceStep
 		{
 			RoboLog.telemetryToUse.addData(className, message);
 		}
-	}
-
-	protected boolean wasTimeKilled()
-	{
-		return wasTimeKilled;
 	}
 
 	/**
@@ -174,7 +179,9 @@ public abstract class SequenceStep
 	public abstract boolean loop();
 
 	/**
-	 * Called to shut down the step, either because loop()returned false or because the user aborted the program.
+	 * Called to shut down the step, either because loop() returned false or because the user aborted the program.
+	 *
+	 * See {@link EndReason EndReason}.
 	 */
-	public abstract void end();
+	public abstract void end(EndReason reason);
 }

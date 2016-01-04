@@ -1,12 +1,11 @@
 package com.team4278.robots.honken;
 
-import com.team4278.motion.Drivetrain;
-import com.team4278.utils.RoboLog;
-import com.team4278.utils.Units;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.hardware.DcMotorController;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.hardware.UltrasonicSensor;
+import com.team4278.motion.Drivetrain;
+import com.team4278.utils.Units;
 
 /**
  * Robot class for Honken
@@ -31,8 +30,8 @@ public class RobotHonken
 		leftHook = opMode.hardwareMap.servo.get("leftHook"); //servo 3
 		rightHook = opMode.hardwareMap.servo.get("rightHook"); 
 
-		opMode.hardwareMap.dcMotor.get("leftFrontMotor").setChannelMode(DcMotorController.RunMode.RUN_WITHOUT_ENCODERS);
-		opMode.hardwareMap.dcMotor.get("rightFrontMotor").setChannelMode(DcMotorController.RunMode.RUN_WITHOUT_ENCODERS);
+		opMode.hardwareMap.dcMotor.get("leftFrontMotor").setMode(DcMotorController.RunMode.RUN_WITHOUT_ENCODERS);
+		opMode.hardwareMap.dcMotor.get("rightFrontMotor").setMode(DcMotorController.RunMode.RUN_WITHOUT_ENCODERS);
 
 		ultrasonic = opMode.hardwareMap.ultrasonicSensor.get("ultrasonic");
 	}

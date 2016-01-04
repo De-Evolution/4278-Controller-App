@@ -32,7 +32,7 @@ public class HardResetEncodersStep extends SequenceStep
 	}
 
 	@Override
-	public void end()
+	public void end(EndReason reason)
 	{
 		motorsToReset.stop();
 	}

@@ -228,7 +228,7 @@ public class Drivetrain
 		}
 
 		@Override
-		public void end()
+		public void end(EndReason reason)
 		{
 			leftMotors.setWriteMode();
 			rightMotors.setWriteMode();
@@ -240,7 +240,7 @@ public class Drivetrain
 //			}
 //			else
 //			{
-//				telemetryMessage("Done!");
+				telemetryMessage("Done!");
 //			}
 			stopMotors();
 
@@ -290,9 +290,9 @@ public class Drivetrain
 		}
 
 		@Override
-		public void end()
+		public void end(EndReason reason)
 		{
-			if(wasTimeKilled())
+			if(reason == EndReason.TIME_KILLED)
 			{
 				lockdownRobot();
 				telemetryMessage("Emergency Killed!");
@@ -349,12 +349,12 @@ public class Drivetrain
 		}
 
 		@Override
-		public void end()
+		public void end(EndReason reason)
 		{
 			leftMotors.setWriteMode();
 			rightMotors.setWriteMode();
 
-			if(wasTimeKilled())
+			if(reason == EndReason.TIME_KILLED)
 			{
 				lockdownRobot();
 				telemetryMessage("Emergency Killed!");
