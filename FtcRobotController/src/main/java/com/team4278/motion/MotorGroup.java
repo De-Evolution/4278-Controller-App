@@ -264,4 +264,17 @@ public class MotorGroup
 			controller.setMotorControllerDeviceMode(DcMotorController.DeviceMode.WRITE_ONLY);
 		}
 	}
+
+	public boolean isBusy()
+	{
+		for(MutablePair<DcMotor, Integer> motorPair : motors)
+		{
+			if(motorPair.first.isBusy())
+			{
+				return true;
+			}
+		}
+
+		return false;
+	}
 }

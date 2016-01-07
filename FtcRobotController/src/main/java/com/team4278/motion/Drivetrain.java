@@ -185,6 +185,8 @@ public class Drivetrain
 
 		double leftPos, rightPos = 0;
 
+		boolean hasEverBeenBusy;
+
 		/**
 		 * Move forward a distance.
 		 * @param cm How far to move
@@ -204,11 +206,15 @@ public class Drivetrain
 		@Override
 		public boolean loop()
 		{
-//			leftPos = leftMotors.getCurrentPosition();
-//			rightPos = rightMotors.getCurrentPosition();
-//			Log.d("moveForward()", String.format("left: %f%%, right: %f%%", leftPos * 100 /targetDistanceRotations, rightPos * 100 / targetDistanceRotations));
-//
-//			return !isCloseEnough(leftPos, targetDistanceRotations) && !isCloseEnough(rightPos, targetDistanceRotations);
+			if(leftMotors.isBusy())
+			{
+				hasEverBeenBusy = true;
+			}
+
+			if(hasEverBeenBusy)
+			{
+				RoboLog.debug(Boolean.toString(leftMotors.isBusy()));
+			}
 
 			return true;
 		}
