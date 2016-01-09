@@ -183,8 +183,6 @@ public class Drivetrain
 	{
 		double targetDistanceRotations;
 
-		double leftPos, rightPos = 0;
-
 		boolean hasEverBeenBusy;
 
 		/**
@@ -211,19 +209,9 @@ public class Drivetrain
 				hasEverBeenBusy = true;
 			}
 
-			if(hasEverBeenBusy)
-			{
-				RoboLog.debug(Boolean.toString(leftMotors.isBusy()));
-			}
+			RoboLog.debug("Busy status: " + leftMotors.isBusy());
 
-			return true;
-		}
-
-		@Override
-		public void second_init()
-		{
-			//leftMotors.setReadMode();
-			//rightMotors.setReadMode();
+			return !hasEverBeenBusy || leftMotors.isBusy();
 		}
 
 		@Override
@@ -239,15 +227,15 @@ public class Drivetrain
 			leftMotors.setWriteMode();
 			rightMotors.setWriteMode();
 
-//			if(wasTimeKilled())
-//			{
-//				lockdownRobot();
-//				telemetryMessage("Emergency Killed!");
-//			}
-//			else
-//			{
+			if(reason == EndReason.TIME_KILLED)
+			{
+				lockdownRobot();
+				telemetryMessage("Emergency Killed!");
+			}
+			else
+			{
 				telemetryMessage("Done!");
-//			}
+			}
 			stopMotors();
 
 		}
@@ -262,9 +250,9 @@ public class Drivetrain
 	{
 		double targetRotations;
 
-		double motorPos = 0;
-
 		MotorGroup motorsToTurnWith;
+
+		boolean hasEverBeenBusy;
 
 		public ArcTurnStep(Side directionToTurn, double degs, int msec)
 		{
@@ -281,12 +269,12 @@ public class Drivetrain
 		@Override
 		public boolean loop()
 		{
-//			motorPos = motorsToTurnWith.getCurrentPosition();
-//			telemetryMessage((motorPos * 100 / targetRotations) + "%");
-//
-//			return !isCloseEnough(motorPos, targetRotations);
+			if(motorsToTurnWith.isBusy())
+			{
+				hasEverBeenBusy = true;
+			}
 
-			return false;
+			return !hasEverBeenBusy || motorsToTurnWith.isBusy();
 		}
 
 		@Override
@@ -317,10 +305,10 @@ public class Drivetrain
 	{
 		double targetRotations;
 
-		double forwardPos, backwardsPos = 0;
-
 		MotorGroup backwardsMotors;  //the motors that move backwards.  When turning LEFT, these would be the LEFT motors.
 		MotorGroup forwardsMotors;
+
+		boolean hasEverBeenBusy;
 
 		public InPlaceTurnStep(Side directionToTurn, double degs, int msec)
 		{
@@ -339,12 +327,12 @@ public class Drivetrain
 		@Override
 		public boolean loop()
 		{
-			forwardPos = forwardsMotors.getCurrentPosition();
-			backwardsPos = backwardsMotors.getCurrentPosition();
+			if(backwardsMotors.isBusy())
+			{
+				hasEverBeenBusy = true;
+			}
 
-			telemetryMessage(String.format("fwd: %f%%, back: %f%%", forwardPos * 100 / targetRotations, backwardsPos * 100 / targetRotations));
-
-			return !isCloseEnough(forwardPos, targetRotations) && !isCloseEnough(backwardsPos, -targetRotations);
+			return !hasEverBeenBusy || backwardsMotors.isBusy();
 		}
 
 		@Override
@@ -357,9 +345,6 @@ public class Drivetrain
 		@Override
 		public void end(EndReason reason)
 		{
-			leftMotors.setWriteMode();
-			rightMotors.setWriteMode();
-
 			if(reason == EndReason.TIME_KILLED)
 			{
 				lockdownRobot();
@@ -371,14 +356,6 @@ public class Drivetrain
 			}
 			stopMotors();
 
-		}
-
-
-		@Override
-		public void second_init()
-		{
-			leftMotors.setReadMode();
-			rightMotors.setReadMode();
 		}
 
 	}

@@ -2,6 +2,8 @@ package com.team4278.robots.goatefoster;
 
 import com.team4278.SequenceOpMode;
 import com.team4278.SequenceStep;
+import com.team4278.utils.Side;
+import com.team4278.utils.Units;
 
 import java.util.LinkedList;
 
@@ -22,14 +24,14 @@ public class ClimbMountainAuto extends SequenceOpMode
 	@Override
 	public void addInitSteps(LinkedList<SequenceStep> steps)
 	{
-		//steps.add(new ArmHomeStep(robot));
+		steps.add(robot.arm.new HomeStep());
 	}
 
 	@Override
 	public void addSteps(LinkedList<SequenceStep> steps)
 	{
-		steps.add(robot.drivetrain.new MoveForwardStep(1000, 10000));
-		//steps.add(robot.drivetrain.new InPlaceTurnStep(Side.LEFT, 135, 2000));
+		steps.add(robot.drivetrain.new MoveForwardStep(50, 5000));
+		steps.add(robot.drivetrain.new InPlaceTurnStep(Side.LEFT, /*135*/90, 3000));
 		//steps.add(robot.drivetrain.new MoveForwardStep(50, 2000));
 	}
 }

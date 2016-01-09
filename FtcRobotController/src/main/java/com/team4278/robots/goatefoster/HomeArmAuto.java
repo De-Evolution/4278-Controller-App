@@ -16,6 +16,6 @@ public class HomeArmAuto extends SequenceOpMode
 	public void addSteps(LinkedList<SequenceStep> steps)
 	{
 		RobotGoatEFoster robot = new RobotGoatEFoster(this);
-		steps.add(new ArmHomeStep(robot));
+		steps.add(robot.arm.new HomeStep());
 	}
 }
