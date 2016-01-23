@@ -2,15 +2,16 @@ package com.team4278.robots.goatefoster;
 
 import com.team4278.SequenceOpMode;
 import com.team4278.SequenceStep;
-import com.team4278.genericsteps.DelayStep;
+import com.team4278.genericsteps.HardResetEncodersStep;
 import com.team4278.utils.Side;
+import com.team4278.utils.Units;
 
 import java.util.LinkedList;
 
 /**
  * Autonomous program to home the arm nto its rest position
  */
-public class ClimbMountainAuto extends SequenceOpMode
+public class RepairZoneAuto extends SequenceOpMode
 {
 	RobotGoatEFoster robot;
 
@@ -30,10 +31,10 @@ public class ClimbMountainAuto extends SequenceOpMode
 	@Override
 	public void addSteps(LinkedList<SequenceStep> steps)
 	{
-		steps.add(robot.drivetrain.new MoveForwardPollingStep(85, 5000));
-		//steps.add(robot.drivetrain.new InPlaceTurnStep(Side.RIGHT, 90, 3000));
-		steps.add(new DelayStep(500));
-		steps.add(robot.drivetrain.new InPlaceTurnPollingStep(Side.RIGHT, 90, 2000));
-		steps.add(robot.drivetrain.new MoveForwardPollingStep(200, 5000));
+		steps.add(new HardResetEncodersStep(robot.drivetrain.getLeftMotors()));
+		steps.add(new HardResetEncodersStep(robot.drivetrain.getRightMotors()));
+		steps.add(robot.drivetrain.new MoveForwardStep(-10, 5000));
+		steps.add(robot.drivetrain.new InPlaceTurnStep(Side.LEFT, 45, 3000));
+		steps.add(robot.drivetrain.new MoveForwardStep(3 * Units.FEET, 3000));
 	}
 }

@@ -1,6 +1,5 @@
 package com.team4278;
 
-import com.qualcomm.robotcore.robocol.Telemetry;
 import com.team4278.utils.RoboLog;
 
 import java.util.LinkedList;
@@ -57,15 +56,18 @@ public abstract class SequenceStep
 	 * Construct the step with a time limit after which it will be killed.
 	 *
 	 * You can call wasTimeKilled() in end() to determine if the command was stopped because it hit the time limit.
-	 * @param timeLimit The time limit in milliseconds.
+	 * @param timeLimit The time limit in milliseconds.  If the time limit is less than one, it will be disabled.
 	 */
 	public SequenceStep(long timeLimit)
 	{
 		this();
 
-		this.timeLimit = timeLimit;
+		if(timeLimit > 1)
+		{
+			this.timeLimit = timeLimit;
 
-		isTimed = true;
+			isTimed = true;
+		}
 	}
 
 

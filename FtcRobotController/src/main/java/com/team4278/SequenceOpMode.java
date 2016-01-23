@@ -186,6 +186,8 @@ public abstract class SequenceOpMode extends OpMode
 		//remove the next step from the front of the queue
 		SequenceStep newStep = thread.steps.pop();
 
+		RoboLog.info("Running SequenceStep " + newStep.getClass().getSimpleName());
+
 		//Add all of its post-requisites
 		thread.steps.addAll(0, newStep.getStepsAfter());
 
@@ -219,5 +221,23 @@ public abstract class SequenceOpMode extends OpMode
 		}
 
 		threads.clear();
+	}
+
+	/**
+	 * Checks if a step of the provided class 9or one of its subclasses) is running in any of the SequenceOpMode's threads
+	 * @param stepClass
+	 * @return
+	 */
+	public boolean isStepRunning(Class<? extends SequenceStep> stepClass)
+	{
+		for (SequenceThread thread : threads)
+		{
+			if (stepClass.isInstance(thread.currentStep))
+			{
+				return true;
+			}
+		}
+
+		return false;
 	}
 }

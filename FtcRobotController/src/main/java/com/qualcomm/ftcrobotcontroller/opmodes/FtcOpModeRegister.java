@@ -35,6 +35,7 @@ import com.qualcomm.robotcore.eventloop.opmode.OpModeManager;
 import com.qualcomm.robotcore.eventloop.opmode.OpModeRegister;
 import com.team4278.robots.goatefoster.ClimbMountainAuto;
 import com.team4278.robots.goatefoster.GoatTeleop;
+import com.team4278.robots.goatefoster.RepairZoneAuto;
 import com.team4278.test.ParallelismTestOpMode;
 import com.team4278.test.PrereqTestOpMode;
 
@@ -62,6 +63,7 @@ public class FtcOpModeRegister implements OpModeRegister {
 	  manager.register("Goat Teleop", new GoatTeleop());
 
 	  manager.register("Climb Mountain Auto", new ClimbMountainAuto());
+	  manager.register("Repair Zone Auto", new RepairZoneAuto());
 
     /*
      * The NullOp op mode

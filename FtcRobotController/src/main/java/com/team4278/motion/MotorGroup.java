@@ -123,7 +123,7 @@ public class MotorGroup
 	public void setPower(double newPower)
 	{
 		//check if in reset or position mode
-		if(currentMode != DcMotorController.RunMode.RUN_TO_POSITION && currentMode != DcMotorController.RunMode.RUN_USING_ENCODERS)
+		if(currentMode != DcMotorController.RunMode.RUN_WITHOUT_ENCODERS && currentMode != DcMotorController.RunMode.RUN_USING_ENCODERS)
 		{
 			setRunMode(hasEncoder ? DcMotorController.RunMode.RUN_USING_ENCODERS : DcMotorController.RunMode.RUN_WITHOUT_ENCODERS);
 		}
@@ -187,11 +187,11 @@ public class MotorGroup
 	 *
 	 * @return  The position (that is, distance since the last reset) of a motor in the group in rotations
 	 */
-	public double getCurrentPosition()
+	public double getPosition()
 	{
 		MutablePair<DcMotor, Integer> motorPair = motors.iterator().next();
 
-		return (motorPair.first.getCurrentPosition() - motorPair.second) / encCountsPerRevolution;
+		return (motorPair.first.getCurrentPosition() - (RobotMath.sgn(motorPair.first.getCurrentPosition())) * motorPair.second) / encCountsPerRevolution;
 	}
 
 	/**
@@ -234,9 +234,20 @@ public class MotorGroup
 	}
 
 	/**
+	 * Clears any soft rests, going back to the motor group's actual value.
+	 */
+	public void clearSoftReset()
+	{
+		for(MutablePair<DcMotor, Integer> motorPair : motors)
+		{
+			motorPair.second = 0;
+		}
+	}
+
+	/**
 	 * Sets all legacy motor controllers to read mode.
 	 *
-	 * This means that the encoders can be read and you can safely call getCurrentPosition()
+	 * This means that the encoders can be read and you can safely call getPosition()
 	 *
 	 * NOTE: This method affects CONTROLLERS, not motors.  If the two motors from one controller are split across different MotorGroups, then BOTH motors
 	 * will be affected by this call and the other group might act strange.

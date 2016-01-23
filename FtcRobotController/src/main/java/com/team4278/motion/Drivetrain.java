@@ -24,7 +24,7 @@ public class Drivetrain
 	//motor power to use for run to position moves
 	final static double MOTOR_POWER_FOR_AUTO_MOVES = .6;
 
-	final static double MOVE_COMPLETE_TOLERANCE_CM = 3;
+	final static double MOVE_COMPLETE_TOLERANCE_CM = 0;
 
 	double completionToleranceRotations;
 
@@ -176,8 +176,22 @@ public class Drivetrain
 	 */
 	private boolean isCloseEnough(double current, double desired)
 	{
-		return Math.abs(current - desired)  < completionToleranceRotations;
+		//motor controllers sometimes erroneously report 0
+//		if(current == 0.0000)
+//		{
+//			return false;
+//		}
+
+		if(desired < 0)
+		{
+			return current - completionToleranceRotations <= desired;
+		}
+		else
+		{
+			return current + completionToleranceRotations >= desired;
+		}
 	}
+
 
 	public class MoveForwardStep extends SequenceStep
 	{
@@ -196,9 +210,11 @@ public class Drivetrain
 
 			targetDistanceRotations = getRotationsByCm(cm);
 
-			addStepBefore(new HardResetEncodersStep(leftMotors));
-			addStepBefore(new HardResetEncodersStep(rightMotors));
+//			addStepBefore(new HardResetEncodersStep(leftMotors));
+//			addStepBefore(new HardResetEncodersStep(rightMotors));
 
+			leftMotors.softResetEncoders();
+			rightMotors.softResetEncoders();
 		}
 
 		@Override
@@ -209,15 +225,21 @@ public class Drivetrain
 				hasEverBeenBusy = true;
 			}
 
-			RoboLog.debug("Busy status: " + leftMotors.isBusy());
+			RoboLog.debug("Busy status: " + leftMotors.isBusy() + ", " + rightMotors.isBusy());
 
-			return !hasEverBeenBusy || leftMotors.isBusy();
+			return !hasEverBeenBusy || (leftMotors.isBusy() || rightMotors.isBusy());
 		}
 
 		@Override
 		public void init()
 		{
 			leftMotors.setTargetPosition(targetDistanceRotations, MOTOR_POWER_FOR_AUTO_MOVES);
+		}
+
+		@Override
+		public void second_init()
+		{
+			super.second_init();
 			rightMotors.setTargetPosition(targetDistanceRotations, MOTOR_POWER_FOR_AUTO_MOVES);
 		}
 
@@ -228,6 +250,77 @@ public class Drivetrain
 			rightMotors.setWriteMode();
 
 			if(reason == EndReason.TIME_KILLED)
+			{
+				lockdownRobot();
+				telemetryMessage("Emergency Killed!");
+			}
+			else
+			{
+				telemetryMessage("Done!");
+			}
+			stopMotors();
+
+		}
+
+	}
+
+
+
+	public class MoveForwardPollingStep extends SequenceStep
+	{
+		double targetDistanceRotations;
+
+		boolean hasEverBeenBusy;
+
+		double leftPos, rightPos;
+		/**
+		 * Move forward a distance.
+		 * @param cm How far to move
+		 * @param msec  Timeout after which the robot will shut down (because it got stuck or otherwise failed). Set to 0 to disable.
+		 */
+		public MoveForwardPollingStep(double cm, int msec)
+		{
+			super(msec);
+
+			targetDistanceRotations = getRotationsByCm(cm);
+
+//			addStepBefore(new HardResetEncodersStep(leftMotors));
+//			addStepBefore(new HardResetEncodersStep(rightMotors));
+
+			leftMotors.softResetEncoders();
+			rightMotors.softResetEncoders();
+		}
+
+		@Override
+		public boolean loop()
+		{
+			leftPos = leftMotors.getPosition();
+			rightPos = rightMotors.getPosition();
+			telemetryMessage(String.format("left: %f%%, right: %f%%", leftPos, rightPos));
+
+			return !isCloseEnough(leftPos, targetDistanceRotations) && !isCloseEnough(rightPos, targetDistanceRotations);
+		}
+
+		@Override
+		public void init()
+		{
+			leftMotors.setPower(MOTOR_POWER_FOR_AUTO_MOVES * RobotMath.sgn(targetDistanceRotations));
+			rightMotors.setPower(MOTOR_POWER_FOR_AUTO_MOVES * RobotMath.sgn(targetDistanceRotations));
+		}
+
+		@Override
+		public void second_init()
+		{
+			super.second_init();
+		}
+
+		@Override
+		public void end(SequenceStep.EndReason reason)
+		{
+			leftMotors.setWriteMode();
+			rightMotors.setWriteMode();
+
+			if(reason == SequenceStep.EndReason.TIME_KILLED)
 			{
 				lockdownRobot();
 				telemetryMessage("Emergency Killed!");
@@ -319,26 +412,32 @@ public class Drivetrain
 			backwardsMotors = getMotorsForSide(directionToTurn);
 			forwardsMotors = getMotorsForSide(directionToTurn.getOpposite());
 
-			addStepBefore(new HardResetEncodersStep(leftMotors));
-			addStepBefore(new HardResetEncodersStep(rightMotors));
+			//addStepBefore(new HardResetEncodersStep(leftMotors));
+			//addStepBefore(new HardResetEncodersStep(rightMotors));
+			backwardsMotors.softResetEncoders();
+			forwardsMotors.softResetEncoders();
 
 		}
 
 		@Override
 		public boolean loop()
 		{
-			if(backwardsMotors.isBusy())
+			if((forwardsMotors.isBusy() && backwardsMotors.isBusy()))
 			{
 				hasEverBeenBusy = true;
 			}
 
-			return !hasEverBeenBusy || backwardsMotors.isBusy();
+			return !hasEverBeenBusy || (forwardsMotors.isBusy() && backwardsMotors.isBusy());
 		}
 
 		@Override
 		public void init()
 		{
 			forwardsMotors.setTargetPosition(targetRotations, MOTOR_POWER_FOR_AUTO_MOVES);
+		}
+
+		public void second_init()
+		{
 			backwardsMotors.setTargetPosition(-1 * targetRotations, MOTOR_POWER_FOR_AUTO_MOVES);
 		}
 
@@ -355,6 +454,156 @@ public class Drivetrain
 				telemetryMessage("Done!");
 			}
 			stopMotors();
+
+		}
+
+	}
+
+	public class InPlaceTurnPollingStep extends SequenceStep
+	{
+		double targetRotations;
+
+		MotorGroup backwardsMotors;  //the motors that move backwards.  When turning LEFT, these would be the LEFT motors.
+		MotorGroup forwardsMotors;
+
+		double forwardsPos, backwardsPos;
+
+		boolean hasEverBeenBusy;
+
+		public InPlaceTurnPollingStep(Side directionToTurn, double degs, int msec)
+		{
+			super(msec);
+
+			targetRotations = getRotationsByCm(turningCircleCircumference * (degs / 360.0));
+
+			backwardsMotors = getMotorsForSide(directionToTurn);
+			forwardsMotors = getMotorsForSide(directionToTurn.getOpposite());
+
+//			addStepBefore(new HardResetEncodersStep(leftMotors));
+//			addStepBefore(new HardResetEncodersStep(rightMotors));
+			backwardsMotors.softResetEncoders();
+			forwardsMotors.softResetEncoders();
+
+		}
+
+
+		@Override
+		public boolean loop()
+		{
+			forwardsPos = forwardsMotors.getPosition();
+			backwardsPos = backwardsMotors.getPosition();
+			telemetryMessage(String.format("back: %f, forward: %f", backwardsPos, forwardsPos));
+
+			return !isCloseEnough(backwardsPos, targetRotations * -1) || !isCloseEnough(forwardsPos, targetRotations);
+		}
+
+
+		@Override
+		public void init()
+		{
+			forwardsMotors.setPower(MOTOR_POWER_FOR_AUTO_MOVES);
+			backwardsMotors.setPower(MOTOR_POWER_FOR_AUTO_MOVES * -1);
+		}
+
+		public void second_init()
+		{
+		}
+
+		@Override
+		public void end(EndReason reason)
+		{
+			if(reason == EndReason.TIME_KILLED)
+			{
+				lockdownRobot();
+				telemetryMessage("Emergency Killed!");
+			}
+			else
+			{
+				telemetryMessage("Done!");
+			}
+			stopMotors();
+
+		}
+
+	}
+
+	public class MoveArbitraryDistancesStep extends SequenceStep
+	{
+		double targetRotationsLeft, targetRotationsRight;
+
+		double leftPos, rightPos;
+
+		boolean rightDone = false, leftDone = false;
+
+		/**
+		 * Move each side of the robot an arbitrary number of rotations.
+		 * @param rotationsLeft how far to move the left side, in wheel rotations
+		 * @param rotationsRight how far to move the right side, in wheel rotations
+		 * @param absolute whether to run the motors in absolute or relative mode.  If absolute, the motors will run to the provided rotations from the zero mark.
+		 * If relative, the motors will run the provided rotations forward or backward from their current position
+		 * @param msec  Timeout after which the robot will shut down (because it got stuck or otherwise failed). Set to 0 to disable.
+		 */
+		public MoveArbitraryDistancesStep(double rotationsLeft, double rotationsRight, boolean absolute, int msec)
+		{
+			super(msec);
+
+			targetRotationsLeft = rotationsLeft;
+			targetRotationsRight = rotationsRight;
+
+			if(absolute)
+			{
+				leftMotors.clearSoftReset();
+				rightMotors.clearSoftReset();
+			}
+			else
+			{
+				leftMotors.softResetEncoders();
+				rightMotors.softResetEncoders();
+			}
+		}
+
+		@Override
+		public boolean loop()
+		{
+			leftPos = leftMotors.getPosition();
+			rightPos = rightMotors.getPosition();
+			telemetryMessage(String.format("left: %f r/%f r, right: %f r/%f r", leftPos, targetRotationsLeft, rightPos, targetRotationsRight));
+
+			if(isCloseEnough(leftPos, targetRotationsLeft))
+			{
+				leftDone = true;
+				leftMotors.stop();
+			}
+
+			if(isCloseEnough(rightPos, targetRotationsRight))
+			{
+				rightDone = true;
+				rightMotors.stop();
+			}
+
+			return !(leftDone && rightDone);
+		}
+
+		@Override
+		public void init()
+		{
+			leftMotors.setPower(MOTOR_POWER_FOR_AUTO_MOVES * RobotMath.sgn(targetRotationsLeft - leftMotors.getPosition()));
+			rightMotors.setPower(MOTOR_POWER_FOR_AUTO_MOVES * RobotMath.sgn(targetRotationsRight - rightMotors.getPosition()));
+		}
+
+		@Override
+		public void end(SequenceStep.EndReason reason)
+		{
+
+			if(reason == SequenceStep.EndReason.TIME_KILLED)
+			{
+				lockdownRobot();
+				telemetryMessage("Emergency Killed!");
+			}
+			else
+			{
+				telemetryMessage("Done!");
+			}
 
 		}
 

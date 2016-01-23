@@ -1,6 +1,5 @@
 package com.team4278.genericsteps;
 
-import com.qualcomm.robotcore.robocol.Telemetry;
 import com.team4278.SequenceStep;
 import com.team4278.motion.MotorGroup;
 
@@ -11,7 +10,7 @@ public class HardResetEncodersStep extends SequenceStep
 {
 	MotorGroup motorsToReset;
 
-	//according to the forums, and encoder reset takes 1-2 cycles to complete
+	//according to the forums, an encoder reset takes 1-2 cycles to complete
 
 	public HardResetEncodersStep(MotorGroup motorsToReset)
 	{

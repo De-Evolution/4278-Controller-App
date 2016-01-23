@@ -17,12 +17,13 @@ import com.team4278.utils.Units;
 public class RobotGoatEFoster
 {
 
-	public static double BRAKE_POSITION_BRAKING = .75;
-	public static double BRAKE_POSITION_RELEASED = .25;
+	public static double BRAKE_POSITION_BRAKING = .7;//.8;
+	public static double BRAKE_POSITION_RELEASED = 0;//BRAKE_POSITION_BRAKING - .25;
 
 	public Drivetrain drivetrain;
 
 	public Servo armBrake;
+
 
 	public DigitalChannel homingHallEffect;
 
@@ -35,7 +36,7 @@ public class RobotGoatEFoster
 
 	public RobotGoatEFoster(OpMode opMode)
 	{
-		drivetrain = Drivetrain.make(true, 25, 4.0 * Units.INCH * Math.PI, 1120 * 42/30 /* gear ratio */ * .95, opMode);
+		drivetrain = Drivetrain.make(true, 15.7 * Units.INCH, 4.0 * Units.INCH * Math.PI, 1120 * 42/30 /* gear ratio */ * .95, opMode);
 
 		armBrake = opMode.hardwareMap.servo.get("armBrakeServo");
 

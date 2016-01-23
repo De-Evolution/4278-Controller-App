@@ -18,7 +18,7 @@ public class Units
 	
 	//english
 	public static final double INCH = 2.54;
-	public static final double FOOT = 30.48;
+	public static final double FEET = 30.48;
 	public static final double MILE = 160934.4;
 	public static final double YARD = 91.44;
 	
