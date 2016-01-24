@@ -14,7 +14,7 @@ public class HardResetEncodersStep extends SequenceStep
 
 	public HardResetEncodersStep(MotorGroup motorsToReset)
 	{
-		super();
+		super(50);
 		this.motorsToReset = motorsToReset;
 	}
 
@@ -27,7 +27,7 @@ public class HardResetEncodersStep extends SequenceStep
 	@Override
 	public boolean loop()
 	{
-		return false;
+		return true;
 	}
 
 	@Override

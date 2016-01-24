@@ -38,30 +38,30 @@ public class GoatTeleop extends ButtonListenerTeleop
 			case A:
 			//executeSequenceSteps(robot.arm.new HomeStep());
 				break;
-			case DPAD_UP:
-				if(!inSynchrochainMode)
-				{
-					synchronizedChainMove(true, 0, true, 0);
-				}
-				break;
-			case DPAD_DOWN:
-				if(!inSynchrochainMode)
-				{
-					synchronizedChainMove(false, -1, false, -1);
-				}
-				break;
-			case DPAD_LEFT:
-				if(!inSynchrochainMode)
-				{
-					synchronizedChainMove(false, -1, true, 1);
-				}
-				break;
-			case DPAD_RIGHT:
-				if(!inSynchrochainMode)
-				{
-					synchronizedChainMove(true, 1, false, -1);
-				}
-				break;
+//			case DPAD_UP:
+//				if(!inSynchrochainMode)
+//				{
+//					synchronizedChainMove(true, 0, true, 0);
+//				}
+//				break;
+//			case DPAD_DOWN:
+//				if(!inSynchrochainMode)
+//				{
+//					synchronizedChainMove(false, -1, false, -1);
+//				}
+//				break;
+//			case DPAD_LEFT:
+//				if(!inSynchrochainMode)
+//				{
+//					synchronizedChainMove(false, -1, true, 1);
+//				}
+//				break;
+//			case DPAD_RIGHT:
+//				if(!inSynchrochainMode)
+//				{
+//					synchronizedChainMove(true, 1, false, -1);
+//				}
+//				break;
 			case RIGHT_STICK:
 				executeSequenceSteps(new HardResetEncodersStep(robot.drivetrain.getLeftMotors()), new HardResetEncodersStep(robot.drivetrain.getRightMotors()));
 				RoboLog.info("Drive encoders hard reset");
@@ -124,9 +124,9 @@ public class GoatTeleop extends ButtonListenerTeleop
 //			telemetry.addData("Arm Brake Servo Value", (gamepad1.left_stick_y + 1) / 2);
 		}
 
-		for(int counter = 0; counter < 0; ++counter)
+		for(int counter = 0; counter < 1; ++counter)
 		{
-			RoboLog.debug("Reading encoder value test #" + counter + ": " + robot.drivetrain.getRightMotors().getPosition());
+			RoboLog.info("Encoder test #" + counter + ": " + robot.drivetrain.getLeftMotors().getPosition());
 		}
 	}
 	//---------------------------------------------------------------------------------------------------------------------------------

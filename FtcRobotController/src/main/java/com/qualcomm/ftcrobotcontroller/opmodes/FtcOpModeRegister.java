@@ -38,6 +38,7 @@ import com.team4278.robots.goatefoster.GoatTeleop;
 import com.team4278.robots.goatefoster.RepairZoneAuto;
 import com.team4278.test.ParallelismTestOpMode;
 import com.team4278.test.PrereqTestOpMode;
+import com.team4278.utils.Alliance;
 
 /**
  * Register Op Modes
@@ -62,7 +63,10 @@ public class FtcOpModeRegister implements OpModeRegister {
 
 	  manager.register("Goat Teleop", new GoatTeleop());
 
-	  manager.register("Climb Mountain Auto", new ClimbMountainAuto());
+	  manager.register("Climb Mountain Auto Red", new ClimbMountainAuto(Alliance.RED));
+	  manager.register("Climb Mountain Auto Blue", new ClimbMountainAuto(Alliance.BLUE));
+
+
 	  manager.register("Repair Zone Auto", new RepairZoneAuto());
 
     /*

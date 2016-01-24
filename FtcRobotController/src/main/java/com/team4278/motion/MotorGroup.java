@@ -191,7 +191,9 @@ public class MotorGroup
 	{
 		MutablePair<DcMotor, Integer> motorPair = motors.iterator().next();
 
-		return (motorPair.first.getCurrentPosition() - (RobotMath.sgn(motorPair.first.getCurrentPosition())) * motorPair.second) / encCountsPerRevolution;
+		int currentCount = motorPair.first.getCurrentPosition();
+
+		return (currentCount - (RobotMath.sgn(currentCount)) * motorPair.second) / encCountsPerRevolution;
 	}
 
 	/**

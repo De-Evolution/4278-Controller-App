@@ -22,7 +22,7 @@ public class Drivetrain
 	final static int PAUSE_TIME = 250;
 
 	//motor power to use for run to position moves
-	final static double MOTOR_POWER_FOR_AUTO_MOVES = .6;
+	final static double MOTOR_POWER_FOR_AUTO_MOVES = .45;
 
 	final static double MOVE_COMPLETE_TOLERANCE_CM = 0;
 
@@ -210,11 +210,11 @@ public class Drivetrain
 
 			targetDistanceRotations = getRotationsByCm(cm);
 
-//			addStepBefore(new HardResetEncodersStep(leftMotors));
-//			addStepBefore(new HardResetEncodersStep(rightMotors));
+			addStepBefore(new HardResetEncodersStep(leftMotors));
+			addStepBefore(new HardResetEncodersStep(rightMotors));
 
-			leftMotors.softResetEncoders();
-			rightMotors.softResetEncoders();
+			//leftMotors.softResetEncoders();
+			//rightMotors.softResetEncoders();
 		}
 
 		@Override
@@ -273,22 +273,26 @@ public class Drivetrain
 		boolean hasEverBeenBusy;
 
 		double leftPos, rightPos;
+
+		double motorPower;
 		/**
 		 * Move forward a distance.
 		 * @param cm How far to move
 		 * @param msec  Timeout after which the robot will shut down (because it got stuck or otherwise failed). Set to 0 to disable.
 		 */
-		public MoveForwardPollingStep(double cm, int msec)
+		public MoveForwardPollingStep(double cm, double power, int msec)
 		{
 			super(msec);
 
+			this.motorPower = power;
+
 			targetDistanceRotations = getRotationsByCm(cm);
 
-//			addStepBefore(new HardResetEncodersStep(leftMotors));
-//			addStepBefore(new HardResetEncodersStep(rightMotors));
+			addStepBefore(new HardResetEncodersStep(leftMotors));
+			addStepBefore(new HardResetEncodersStep(rightMotors));
 
-			leftMotors.softResetEncoders();
-			rightMotors.softResetEncoders();
+			//leftMotors.softResetEncoders();
+			//rightMotors.softResetEncoders();
 		}
 
 		@Override
@@ -296,7 +300,7 @@ public class Drivetrain
 		{
 			leftPos = leftMotors.getPosition();
 			rightPos = rightMotors.getPosition();
-			telemetryMessage(String.format("left: %f%%, right: %f%%", leftPos, rightPos));
+			telemetryMessage(String.format("left: %f r/%f r, right: %f r/%f r", leftPos, targetDistanceRotations, rightPos, targetDistanceRotations));
 
 			return !isCloseEnough(leftPos, targetDistanceRotations) && !isCloseEnough(rightPos, targetDistanceRotations);
 		}
@@ -304,8 +308,8 @@ public class Drivetrain
 		@Override
 		public void init()
 		{
-			leftMotors.setPower(MOTOR_POWER_FOR_AUTO_MOVES * RobotMath.sgn(targetDistanceRotations));
-			rightMotors.setPower(MOTOR_POWER_FOR_AUTO_MOVES * RobotMath.sgn(targetDistanceRotations));
+			leftMotors.setPower(motorPower * RobotMath.sgn(targetDistanceRotations));
+			rightMotors.setPower(motorPower * RobotMath.sgn(targetDistanceRotations));
 		}
 
 		@Override
@@ -479,10 +483,10 @@ public class Drivetrain
 			backwardsMotors = getMotorsForSide(directionToTurn);
 			forwardsMotors = getMotorsForSide(directionToTurn.getOpposite());
 
-//			addStepBefore(new HardResetEncodersStep(leftMotors));
-//			addStepBefore(new HardResetEncodersStep(rightMotors));
-			backwardsMotors.softResetEncoders();
-			forwardsMotors.softResetEncoders();
+			addStepBefore(new HardResetEncodersStep(leftMotors));
+			addStepBefore(new HardResetEncodersStep(rightMotors));
+//			backwardsMotors.softResetEncoders();
+//			forwardsMotors.softResetEncoders();
 
 		}
 
