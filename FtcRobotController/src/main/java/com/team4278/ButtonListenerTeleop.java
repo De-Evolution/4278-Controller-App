@@ -92,12 +92,14 @@ public abstract class ButtonListenerTeleop extends SequenceOpMode
 			{
 				if(prevButtons.contains(button) && !newButtons.contains(button))
 				{
-					onButtonPressed(button);
+					onButtonReleased(button);
 				}
 
 				else if(newButtons.contains(button) && !prevButtons.contains(button))
 				{
-					onButtonReleased(button);
+
+					onButtonPressed(button);
+
 				}
 			}
 		}

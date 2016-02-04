@@ -29,6 +29,8 @@ public class RobotGoatEFoster
 
 	public MotorGroup armMotors;
 
+	public MotorGroup measuringTapeMotors;
+
 	public Arm arm;
 
 	//flag to tell the teleop code not to run the arm from controller input
@@ -41,6 +43,8 @@ public class RobotGoatEFoster
 		armBrake = opMode.hardwareMap.servo.get("armBrakeServo");
 
 		armMotors = new MotorGroup(true, 1440 * (18 / 14) * (60/18), opMode.hardwareMap.dcMotor.get("mArmTop"), opMode.hardwareMap.dcMotor.get("mArmBottom"));
+		measuringTapeMotors = new MotorGroup(false, 0, opMode.hardwareMap.dcMotor.get("mHookTop"), opMode.hardwareMap.dcMotor.get("mHookBottom"));
+
 
 		homingHallEffect = opMode.hardwareMap.digitalChannel.get("armEndstop");
 

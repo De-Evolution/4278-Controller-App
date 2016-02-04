@@ -62,6 +62,12 @@ public class GoatTeleop extends ButtonListenerTeleop
 //					synchronizedChainMove(true, 1, false, -1);
 //				}
 //				break;
+			case B:
+				robot.measuringTapeMotors.setPower(.6);
+				break;
+			case Y:
+				robot.measuringTapeMotors.setPower(-.6);
+				break;
 			case RIGHT_STICK:
 				executeSequenceSteps(new HardResetEncodersStep(robot.drivetrain.getLeftMotors()), new HardResetEncodersStep(robot.drivetrain.getRightMotors()));
 				RoboLog.info("Drive encoders hard reset");
@@ -74,7 +80,15 @@ public class GoatTeleop extends ButtonListenerTeleop
 	@Override
 	public void onButtonReleased(Button button)
 	{
-
+		switch(button)
+		{
+			case B:
+				robot.measuringTapeMotors.stop();
+				break;
+			case Y:
+				robot.measuringTapeMotors.stop();
+				break;
+		}
 	}
 
 	@Override

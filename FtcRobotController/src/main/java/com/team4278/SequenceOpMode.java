@@ -114,11 +114,16 @@ public abstract class SequenceOpMode extends OpMode
 	@Override
 	public void init_loop()
 	{
-		loop();
+		sequenceLoop();
 	}
 
 	@Override
 	public void loop()
+	{
+		sequenceLoop();
+	}
+
+	private void sequenceLoop()
 	{
 		SequenceThread thread;
 
