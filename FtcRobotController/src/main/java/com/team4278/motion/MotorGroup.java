@@ -193,7 +193,7 @@ public class MotorGroup
 
 		int currentCount = motorPair.first.getCurrentPosition();
 
-		return (currentCount - (RobotMath.sgn(currentCount)) * motorPair.second) / encCountsPerRevolution;
+		return (currentCount - (RobotMath.sgn(currentCount) * motorPair.second)) / encCountsPerRevolution;
 	}
 
 	/**
