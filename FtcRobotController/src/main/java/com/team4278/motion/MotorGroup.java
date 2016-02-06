@@ -1,10 +1,10 @@
 package com.team4278.motion;
 
-import com.qualcomm.hardware.HiTechnicNxtDcMotorController;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorController;
 import com.team4278.utils.MutablePair;
 import com.team4278.utils.RobotMath;
+import com.qualcomm.hardware.hitechnic.HiTechnicNxtDcMotorController;
 
 import java.util.HashSet;
 import java.util.Set;

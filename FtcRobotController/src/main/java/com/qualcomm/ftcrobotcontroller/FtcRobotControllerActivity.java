@@ -42,6 +42,7 @@ import android.content.SharedPreferences;
 import android.content.res.Configuration;
 import android.hardware.usb.UsbManager;
 import android.net.ConnectivityManager;
+import android.net.wifi.WifiManager;
 import android.os.Bundle;
 import android.os.IBinder;
 import android.preference.PreferenceManager;
@@ -110,6 +111,7 @@ public class FtcRobotControllerActivity extends Activity {
 
 	Intent wdServiceIntent;
 	Intent lanServiceIntent;
+  protected WifiManager.WifiLock wifiLock;
 
 	IntentFilter networkUpdateFilter;
 	protected WifiIPUpdaterReceiver ipUpdaterReceiver;
@@ -188,6 +190,9 @@ public class FtcRobotControllerActivity extends Activity {
     PreferenceManager.setDefaultValues(this, R.xml.preferences, false);
     preferences = PreferenceManager.getDefaultSharedPreferences(this);
 
+    WifiManager wifiManager = (WifiManager) getSystemService(Context.WIFI_SERVICE);
+    wifiLock = wifiManager.createWifiLock(WifiManager.WIFI_MODE_FULL_HIGH_PERF, "");
+
     hittingMenuButtonBrightensScreen();
 
 
@@ -261,6 +266,7 @@ public class FtcRobotControllerActivity extends Activity {
 		    return false;
 	    }
     });
+    wifiLock.acquire();
   }
 
   @Override
@@ -282,6 +288,8 @@ public class FtcRobotControllerActivity extends Activity {
     RobotLog.cancelWriteLogcatToDisk(this);
 
     preferences.edit().putBoolean("use_lan_connection", useLANconnection).apply();
+
+    wifiLock.release();
   }
 
   @Override
