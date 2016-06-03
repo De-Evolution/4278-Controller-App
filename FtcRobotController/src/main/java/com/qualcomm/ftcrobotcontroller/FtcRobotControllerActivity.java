@@ -344,6 +344,7 @@ public class FtcRobotControllerActivity extends Activity {
         return true;
       case R.id.action_change_wifi_channel:
 		  startActivity(new Intent(this, FtcWifiChannelSelectorActivity.class));
+		  return true;
 	    case R.id.action_toggle_lan:
 		    if(useLANconnection)
 		    {
@@ -361,7 +362,8 @@ public class FtcRobotControllerActivity extends Activity {
 			    item.setTitle(R.string.lan_disable_menu_item);
 			    useLANconnection = true;
 		    }
-      default:
+			return true;
+		default:
         return super.onOptionsItemSelected(item);
     }
   }

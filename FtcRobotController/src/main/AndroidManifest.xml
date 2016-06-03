@@ -30,6 +30,7 @@
   <uses-permission
     android:name="android.permission.WRITE_SETTINGS"
     android:required="true" />
+    <uses-permission android:name="android.permission.WAKE_LOCK" android:required="true"/>
 
   <uses-feature android:name="android.hardware.usb.accessory" />
 

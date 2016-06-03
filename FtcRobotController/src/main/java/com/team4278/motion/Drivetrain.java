@@ -57,8 +57,7 @@ public class Drivetrain
 	}
 
 	/**
-	 * Builds a drivetrain, finding all motors like "leftFooMotor" or "drvLeft1"
-	 * Also autodetects legacy motor controllers and uses LegacyMotorGroups if a LinearOpMode is provided
+	 * Builds a drivetrain, finding all motors like "leftSomethingMotor" or "drvLeft1"
 	 * @param useEncoders whether or not to set the motors to run in closed-loop, encoder-backed mode
 	 * @param wheelbase the diagonal distance from the left front wheel to the right back one.  Basically, the diameter of the turning circle.
 	 * @param wheelCircumference the circumference of the wheels
@@ -220,7 +219,7 @@ public class Drivetrain
 		@Override
 		public boolean loop()
 		{
-			if(leftMotors.isBusy())
+			if(leftMotors.isBusy() && rightMotors.isBusy())
 			{
 				hasEverBeenBusy = true;
 			}
@@ -234,13 +233,16 @@ public class Drivetrain
 		public void init()
 		{
 			leftMotors.setTargetPosition(targetDistanceRotations, MOTOR_POWER_FOR_AUTO_MOVES);
+			rightMotors.setTargetPosition(targetDistanceRotations, MOTOR_POWER_FOR_AUTO_MOVES);
+
 		}
 
 		@Override
 		public void second_init()
 		{
 			super.second_init();
-			rightMotors.setTargetPosition(targetDistanceRotations, MOTOR_POWER_FOR_AUTO_MOVES);
+			leftMotors.setReadMode();
+			rightMotors.setReadMode();
 		}
 
 		@Override

@@ -28,6 +28,6 @@ public class RepairZoneAuto extends SequenceOpMode
 	@Override
 	public void addSteps(LinkedList<SequenceStep> steps)
 	{
-		steps.add(robot.drivetrain.new MoveForwardPollingStep(240, .45, 10000));
+		steps.add(robot.drivetrain.new MoveForwardPollingStep(260, .45, 10000));
 	}
 }

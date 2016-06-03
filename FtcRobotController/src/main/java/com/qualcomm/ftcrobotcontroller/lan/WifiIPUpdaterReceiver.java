@@ -43,7 +43,7 @@ public class WifiIPUpdaterReceiver extends BroadcastReceiver
 
 			int ipAddress = wifiMan.getConnectionInfo().getIpAddress();
 
-			// Convert little-endian to big-endianif needed
+			// Convert little-endian to big-endian if needed
 			if (ByteOrder.nativeOrder().equals(ByteOrder.LITTLE_ENDIAN))
 			{
 				ipAddress = Integer.reverseBytes(ipAddress);

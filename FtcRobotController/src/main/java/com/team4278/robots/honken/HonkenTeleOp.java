@@ -31,22 +31,22 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE. */
 
 package com.team4278.robots.honken;
 
-import com.team4278.robots.honken.RobotHonken;
-import com.qualcomm.robotcore.eventloop.opmode.OpMode;
+import com.team4278.ButtonListenerTeleop;
 
 /**
  * TeleOp Mode
  * <p>
  * Enables control of the robot via the gamepad
  */
-public class BasicTeleOp extends OpMode {
+public class HonkenTeleOp extends ButtonListenerTeleop
+{
 
 
 	RobotHonken robot;
 	/**
 	 * Constructor
 	 */
-	public BasicTeleOp() {
+	public HonkenTeleOp() {
 
 	}
 
@@ -73,23 +73,31 @@ public class BasicTeleOp extends OpMode {
 	 * @see com.qualcomm.robotcore.eventloop.opmode.OpMode#run()
 	 */
 	@Override
-	public void loop() {
-
-		/*
-		 * Gamepad 1
-		 * 
-		 * Gamepad 1 controls the motors via the left stick, and it controls the
-		 * wrist/claw via the a,b, x, y buttons
-		 */
-
-		// throttle: left_stick_y ranges from -1 to 1, where -1 is full up, and
-		// 1 is full down
-		// direction: left_stick_x ranges from -1 to 1, where -1 is full left
-		// and 1 is full right
-		float throttle = gamepad1.left_stick_y;
-		float direction = gamepad1.left_stick_x;
+	public void loop()
+	{
 		// write the values to the motors
 		robot.drivetrain.arcadeDrive(gamepad1.left_stick_x, gamepad1.left_stick_y);
+
+	}
+
+	@Override
+	public void onButtonPressed(Button button)
+	{
+		switch(button)
+		{
+			case A:
+				robot.retractHooks();
+				break;
+			case B:
+				robot.leftHook.setPosition(RobotHonken.LEFTHOOK_DOWN);
+				robot.rightHook.setPosition(RobotHonken.RIGHTHOOK_DOWN);
+				break;
+		}
+	}
+
+	@Override
+	public void onButtonReleased(Button button)
+	{
 
 	}
 

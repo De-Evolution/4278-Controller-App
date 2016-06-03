@@ -1,7 +1,6 @@
 package com.team4278.robots.goatefoster;
 
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
-import com.qualcomm.robotcore.hardware.DigitalChannel;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.team4278.SequenceStep;
 import com.team4278.genericsteps.HardResetEncodersStep;
@@ -25,7 +24,7 @@ public class RobotGoatEFoster
 	public Servo armBrake;
 
 
-	public DigitalChannel homingHallEffect;
+	//public DigitalChannel homingHallEffect;
 
 	public MotorGroup armMotors;
 
@@ -46,11 +45,9 @@ public class RobotGoatEFoster
 		measuringTapeMotors = new MotorGroup(false, 0, opMode.hardwareMap.dcMotor.get("mHookTop"), opMode.hardwareMap.dcMotor.get("mHookBottom"));
 
 
-		homingHallEffect = opMode.hardwareMap.digitalChannel.get("armEndstop");
-
-		//NeverRest 40 motors only produce 78% of the encoder pulses as standard encoders, so 78% power is full speed when running with encoders
-		drivetrain.getLeftMotors().setScaleFactor(.78);
-		drivetrain.getRightMotors().setScaleFactor(.78);
+		//homingHallEffect = opMode.hardwareMap.digitalChannel.get("armEndstop");
+		drivetrain.getLeftMotors().setScaleFactor(1);
+		drivetrain.getRightMotors().setScaleFactor(1);
 
 		arm = new Arm();
 	}
@@ -125,7 +122,7 @@ public class RobotGoatEFoster
 			@Override
 			public boolean loop()
 			{
-				return homingHallEffect.getState(); //active low
+				return /*homingHallEffect.getState();*/ false; //active low
 			}
 
 

@@ -33,7 +33,7 @@ public class RobotHonken
 		opMode.hardwareMap.dcMotor.get("leftFrontMotor").setMode(DcMotorController.RunMode.RUN_WITHOUT_ENCODERS);
 		opMode.hardwareMap.dcMotor.get("rightFrontMotor").setMode(DcMotorController.RunMode.RUN_WITHOUT_ENCODERS);
 
-		ultrasonic = opMode.hardwareMap.ultrasonicSensor.get("ultrasonic");
+		//ultrasonic = opMode.hardwareMap.ultrasonicSensor.get("ultrasonic");
 	}
 
 	public void retractHooks()

@@ -42,7 +42,7 @@ public class ClimbMountainAuto extends SequenceOpMode
 		steps.add(robot.drivetrain.new MoveForwardPollingStep(165, .45,  7000));
 		//steps.add(robot.drivetrain.new InPlaceTurnStep(Side.RIGHT, 90, 3000));
 		steps.add(new DelayStep(500));
-		steps.add(robot.drivetrain.new InPlaceTurnPollingStep(currentAlliance == Alliance.BLUE ? Side.LEFT : Side.RIGHT, 80, 2000));
+		steps.add(robot.drivetrain.new InPlaceTurnPollingStep(currentAlliance == Alliance.BLUE ? Side.LEFT : Side.RIGHT, 90, 2000));
 		steps.add(robot.drivetrain.new MoveForwardPollingStep(-200, .6, 10000));
 	}
 }

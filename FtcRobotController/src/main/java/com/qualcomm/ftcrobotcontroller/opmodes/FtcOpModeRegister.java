@@ -33,12 +33,10 @@ package com.qualcomm.ftcrobotcontroller.opmodes;
 
 import com.qualcomm.robotcore.eventloop.opmode.OpModeManager;
 import com.qualcomm.robotcore.eventloop.opmode.OpModeRegister;
-import com.team4278.robots.goatefoster.ClimbMountainAuto;
-import com.team4278.robots.goatefoster.GoatTeleop;
-import com.team4278.robots.goatefoster.RepairZoneAuto;
+import com.team4278.robots.honken.HonkenDrivingTestAuto;
+import com.team4278.robots.honken.HonkenTeleOp;
 import com.team4278.test.ParallelismTestOpMode;
 import com.team4278.test.PrereqTestOpMode;
-import com.team4278.utils.Alliance;
 
 /**
  * Register Op Modes
@@ -61,20 +59,21 @@ public class FtcOpModeRegister implements OpModeRegister {
      * If two or more op modes are registered with the same name, the app will display an error.
      */
 
-	  manager.register("Goat Teleop", new GoatTeleop());
-
-	  manager.register("Climb Mountain Auto Red", new ClimbMountainAuto(Alliance.RED));
-	  manager.register("Climb Mountain Auto Blue", new ClimbMountainAuto(Alliance.BLUE));
-
-
-	  manager.register("Repair Zone Auto", new RepairZoneAuto());
+//	  manager.register("Goat Teleop", new GoatTeleop());
+//
+//	  manager.register("Climb Mountain Auto Red", new ClimbMountainAuto(Alliance.RED));
+//	  manager.register("Climb Mountain Auto Blue", new ClimbMountainAuto(Alliance.BLUE));
+//
+//
+//	  manager.register("Repair Zone Auto", new RepairZoneAuto());
 
     /*
      * The NullOp op mode
      */
-    manager.register("NullOp", NullOp.class);
+	  manager.register("NullOp", NullOp.class);
+	  manager.register("HonkenTeleOp", HonkenTeleOp.class);
+	  manager.register("HonkenDrivingTest", HonkenDrivingTestAuto.class);
 
-//	  manager.register("HonkenTeleOp", HonkenTeleOp.class);
 
 	  //Testing OpModes
 	  //------------------------------------------------------

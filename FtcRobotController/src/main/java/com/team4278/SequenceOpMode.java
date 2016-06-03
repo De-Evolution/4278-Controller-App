@@ -229,7 +229,7 @@ public abstract class SequenceOpMode extends OpMode
 	}
 
 	/**
-	 * Checks if a step of the provided class 9or one of its subclasses) is running in any of the SequenceOpMode's threads
+	 * Checks if a step of the provided class (or one of its subclasses) is running in any of the SequenceOpMode's threads
 	 * @param stepClass
 	 * @return
 	 */
