@@ -6,6 +6,7 @@ import android.os.IBinder;
 
 import com.qualcomm.ftccommon.DbgLog;
 import com.qualcomm.ftccommon.FtcRobotControllerService;
+import com.qualcomm.ftccommon.UpdateUI;
 import com.qualcomm.robotcore.eventloop.EventLoop;
 import com.qualcomm.robotcore.eventloop.EventLoopManager;
 import com.qualcomm.robotcore.exception.RobotCoreException;
@@ -15,8 +16,6 @@ import com.qualcomm.robotcore.robot.RobotState;
 import com.qualcomm.robotcore.util.RobotLog;
 
 import java.lang.reflect.Field;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
 import java.net.InetSocketAddress;
 import java.net.SocketException;
 
@@ -31,8 +30,9 @@ public class FtcRobotControllerLanService extends FtcRobotControllerService
 	Thread initThread;
 	EventLoop loop;
 	StatusUpdater statusUpdater;
+
+	UpdateUI.Callback updateCallback;
 	
-	Method setStatusMethod;
 	Field binderField;
 
 	public FtcRobotControllerLanService()
@@ -40,10 +40,6 @@ public class FtcRobotControllerLanService extends FtcRobotControllerService
 		super();
 
 		statusUpdater = new StatusUpdater();
-
-		Method[] superclassMethods = getClass().getSuperclass().getDeclaredMethods();
-		setStatusMethod = superclassMethods[superclassMethods.length - 6];  //6th method from the end
-		setStatusMethod.setAccessible(true);
 
 		binderField = getClass().getSuperclass().getDeclaredFields()[0];
 		binderField.setAccessible(true);
@@ -78,18 +74,13 @@ public class FtcRobotControllerLanService extends FtcRobotControllerService
 	//proxy to super.a
 	public void setStatus(String newStatus)
 	{
-		try
-		{
-			setStatusMethod.invoke(this, newStatus);
-		}
-		catch (IllegalAccessException e)
-		{
-			e.printStackTrace();
-		}
-		catch (InvocationTargetException e)
-		{
-			e.printStackTrace();
-		}
+		updateCallback.robotUpdate(newStatus);
+	}
+
+	@Override
+	public void setCallback(UpdateUI.Callback callback)
+	{
+		this.updateCallback = callback;
 	}
 
 	@Override
@@ -246,6 +237,12 @@ public class FtcRobotControllerLanService extends FtcRobotControllerService
 					case DROPPED_CONNECTION:
 						setStatus("Robot Status: dropped connection");
 				}
+		}
+
+		@Override
+		public void onErrorOrWarning()
+		{
+			updateCallback.refreshErrorTextOnUiThread();
 		}
 	}
 }
